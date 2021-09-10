@@ -82,6 +82,10 @@ func (r *base) Transaction() sql.API {
 
 func (r *base) NewTransaction() {
 	r.tx = r.db.Begin()
+	r.afterCommit = nil
+	r.afterRollback = nil
+	r.beforeCommit = nil
+	r.beforeRollback = nil
 }
 
 func (r *base) CommitTransaction() error {
