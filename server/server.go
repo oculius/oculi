@@ -7,14 +7,14 @@ import (
 )
 
 type (
-	ServerEngine interface {
+	Engine interface {
 		Run() error
 		DevelopmentMode()
 
-		BeforeRun(hf HookFunction) ServerEngine
-		AfterRun(hf HookFunction) ServerEngine
-		BeforeExit(hf HookFunction) ServerEngine
-		AfterExit(hf HookFunction) ServerEngine
+		BeforeRun(hf HookFunction) Engine
+		AfterRun(hf HookFunction) Engine
+		BeforeExit(hf HookFunction) Engine
+		AfterExit(hf HookFunction) Engine
 	}
 
 	Resource interface {
@@ -28,7 +28,7 @@ type (
 		Close() error
 	}
 
-	RestAPIEngine interface {
+	RestAPI interface {
 		Register(ec *echo.Echo) error
 		Health() echo.HandlerFunc
 	}
@@ -41,7 +41,7 @@ type (
 	HookFunction func(res Resource) error
 
 	WebServer struct {
-		restApi        RestAPIEngine
+		restApi        RestAPI
 		resource       Resource
 		config         Config
 		useDefaultGZip bool
@@ -57,4 +57,4 @@ type (
 	}
 )
 
-var _ ServerEngine = &WebServer{}
+var _ Engine = &WebServer{}
