@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	IOculiLogger interface {
+	OculiLogger interface {
 		// OPrint stands for Oculi Print. A method to print Info as info.
 		OPrint(info Info)
 		// ODebug stands for Oculi Debug. A method to print Info as debug.
@@ -24,8 +24,8 @@ type (
 		OPanic(info Info)
 	}
 
-	ILogger interface {
-		IOculiLogger
+	Logger interface {
+		OculiLogger
 		Output() io.Writer
 		SetOutput(w io.Writer)
 		Prefix() string

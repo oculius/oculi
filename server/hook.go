@@ -1,21 +1,21 @@
 package server
 
-func (w *WebServer) BeforeRun(hf HookFunction) IServer {
+func (w *WebServer) BeforeRun(hf HookFunction) ServerEngine {
 	w.beforeRun = append(w.beforeRun, hf)
 	return w
 }
 
-func (w *WebServer) AfterRun(hf HookFunction) IServer {
+func (w *WebServer) AfterRun(hf HookFunction) ServerEngine {
 	w.afterRun = append(w.afterRun, hf)
 	return w
 }
 
-func (w *WebServer) BeforeExit(hf HookFunction) IServer {
+func (w *WebServer) BeforeExit(hf HookFunction) ServerEngine {
 	w.beforeExit = append(w.beforeExit, hf)
 	return w
 }
 
-func (w *WebServer) AfterExit(hf HookFunction) IServer {
+func (w *WebServer) AfterExit(hf HookFunction) ServerEngine {
 	w.afterExit = append(w.afterExit, hf)
 	return w
 }

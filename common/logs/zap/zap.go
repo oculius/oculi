@@ -21,9 +21,9 @@ type (
 	}
 )
 
-var _ logs.ILogger = &zapLogger{}
+var _ logs.Logger = &zapLogger{}
 
-func New(logOption LoggerOption, options ...zap.Option) (logs.ILogger, error) {
+func New(logOption LoggerOption, options ...zap.Option) (logs.Logger, error) {
 	var (
 		instance *zap.Logger
 		err      error
@@ -46,12 +46,12 @@ func New(logOption LoggerOption, options ...zap.Option) (logs.ILogger, error) {
 }
 
 // NewDevelopment is a method for constructing new Zap Logger for development env
-func NewDevelopment(options ...zap.Option) (logs.ILogger, error) {
+func NewDevelopment(options ...zap.Option) (logs.Logger, error) {
 	return New(LoggerOption{true, log.DEBUG, ""}, options...)
 }
 
 // NewProduction is a method for constructing new Zap Logger for production env
-func NewProduction(options ...zap.Option) (logs.ILogger, error) {
+func NewProduction(options ...zap.Option) (logs.Logger, error) {
 	return New(LoggerOption{false, log.INFO, ""}, options...)
 }
 

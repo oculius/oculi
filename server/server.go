@@ -7,43 +7,43 @@ import (
 )
 
 type (
-	IServer interface {
+	ServerEngine interface {
 		Run() error
 		DevelopmentMode()
 
-		BeforeRun(hf HookFunction) IServer
-		AfterRun(hf HookFunction) IServer
-		BeforeExit(hf HookFunction) IServer
-		AfterExit(hf HookFunction) IServer
+		BeforeRun(hf HookFunction) ServerEngine
+		AfterRun(hf HookFunction) ServerEngine
+		BeforeExit(hf HookFunction) ServerEngine
+		AfterExit(hf HookFunction) ServerEngine
 	}
 
-	IResource interface {
+	Resource interface {
 		Echo() *echo.Echo
 		ServiceName() string
 		ServerPort() int
 		Identifier() string
 		Uptime() time.Time
-		Logger() logs.ILogger
+		Logger() logs.Logger
 		// Validator() validator.Validator
 		Close() error
 	}
 
-	IRestAPI interface {
+	RestAPIEngine interface {
 		Register(ec *echo.Echo) error
 		Health() echo.HandlerFunc
 	}
 
-	IConfig interface {
+	Config interface {
 		ServerGracefullyDuration() time.Duration
 		Instance() any
 	}
 
-	HookFunction func(res IResource) error
+	HookFunction func(res Resource) error
 
 	WebServer struct {
-		restApi        IRestAPI
-		resource       IResource
-		config         IConfig
+		restApi        RestAPIEngine
+		resource       Resource
+		config         Config
 		useDefaultGZip bool
 
 		afterRun   []HookFunction
@@ -57,4 +57,4 @@ type (
 	}
 )
 
-var _ IServer = &WebServer{}
+var _ ServerEngine = &WebServer{}
