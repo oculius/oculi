@@ -1,4 +1,6 @@
-package error
+package cmn_err
+
+import "net/http"
 
 type (
 	GenericError interface {
@@ -15,3 +17,5 @@ type (
 		Build(source error, metadata any, args ...interface{}) GenericError
 	}
 )
+
+var ValidatorErrorHttpStatus = http.StatusUnprocessableEntity

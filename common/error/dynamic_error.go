@@ -1,4 +1,4 @@
-package error
+package cmn_err
 
 import "net/http"
 
@@ -37,34 +37,34 @@ func (d dynamicErrorSeed) Build(source error, metadata any, args ...interface{})
 	}
 }
 
-func (d dynamicError) Error() string {
+func (d *dynamicError) Error() string {
 	return d.source.Error()
 }
 
-func (d dynamicError) ResponseCode() int {
+func (d *dynamicError) ResponseCode() int {
 	return d.httpStatus
 }
 
-func (d dynamicError) ResponseStatus() string {
+func (d *dynamicError) ResponseStatus() string {
 	return http.StatusText(d.httpStatus)
 }
 
-func (d dynamicError) Equal(err GenericError) bool {
-	casted, ok := err.(dynamicError)
+func (d *dynamicError) Equal(err GenericError) bool {
+	casted, ok := err.(*dynamicError)
 	if !ok {
 		return false
 	}
 	return casted.seed.id == d.seed.id
 }
 
-func (d dynamicError) Metadata() any {
+func (d *dynamicError) Metadata() any {
 	return d.metadata
 }
 
-func (d dynamicError) Source() error {
+func (d *dynamicError) Source() error {
 	return d.source
 }
 
-func (d dynamicError) Detail() string {
+func (d *dynamicError) Detail() string {
 	return d.detail
 }
