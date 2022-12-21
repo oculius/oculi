@@ -1,20 +1,20 @@
-package cmn_err
+package gerr
 
 import "net/http"
 
 type (
-	GenericError interface {
+	Error interface {
 		error
 		ResponseCode() int
 		ResponseStatus() string
-		Equal(err GenericError) bool
+		Equal(err Error) bool
 		Metadata() any
 		Source() error
 		Detail() string
 	}
 
-	DynamicError interface {
-		Build(source error, metadata any, args ...interface{}) GenericError
+	ErrorSeed interface {
+		Build(source error, metadata any, args ...interface{}) Error
 	}
 )
 

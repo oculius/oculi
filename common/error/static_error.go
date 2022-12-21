@@ -1,4 +1,4 @@
-package cmn_err
+package gerr
 
 import (
 	"net/http"
@@ -14,7 +14,7 @@ type (
 	}
 )
 
-func NewError(source error, detail string, httpStatus int, metadata any) GenericError {
+func NewError(source error, detail string, httpStatus int, metadata any) Error {
 	return &staticError{source, detail, httpStatus, metadata}
 }
 
@@ -34,7 +34,7 @@ func (s *staticError) ResponseStatus() string {
 	return http.StatusText(s.httpStatus)
 }
 
-func (s *staticError) Equal(err GenericError) bool {
+func (s *staticError) Equal(err Error) bool {
 	_, ok := err.(*staticError)
 	if !ok {
 		return false

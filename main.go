@@ -16,7 +16,7 @@ func main() {
 		reset  = "\033[0m"
 	)
 	fmt.Printf("%s %s %s %s %s\n", green, "haiii", reset, yellow, "hello")
-	y := cmn_err.NewError(errors.New("testing"), "test", http.StatusBadRequest, 456)
+	y := gerr.NewError(errors.New("testing"), "test", http.StatusBadRequest, 456)
 	y2 := response.NewOkResponse("hai", "123", 123)
 	x, _ := json.Marshal(response.New(y))
 	fmt.Println(string(x))

@@ -1,4 +1,4 @@
-package cmn_err
+package gerr
 
 import "net/http"
 
@@ -18,13 +18,13 @@ type (
 	}
 )
 
-func NewErrorSeed(id int64, formatter func(...interface{}) string, conditionalHttpStatus func(error) int) DynamicError {
+func NewErrorSeed(id int64, formatter func(...interface{}) string, conditionalHttpStatus func(error) int) ErrorSeed {
 	return &dynamicErrorSeed{
 		id, formatter, conditionalHttpStatus,
 	}
 }
 
-func (d dynamicErrorSeed) Build(source error, metadata any, args ...interface{}) GenericError {
+func (d dynamicErrorSeed) Build(source error, metadata any, args ...interface{}) Error {
 	if d.detail == nil || d.httpStatus == nil {
 		panic("seed formatter or conditional http status is nil")
 	}
@@ -49,7 +49,7 @@ func (d *dynamicError) ResponseStatus() string {
 	return http.StatusText(d.httpStatus)
 }
 
-func (d *dynamicError) Equal(err GenericError) bool {
+func (d *dynamicError) Equal(err Error) bool {
 	casted, ok := err.(*dynamicError)
 	if !ok {
 		return false

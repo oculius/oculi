@@ -1,4 +1,4 @@
-package cmn_err
+package gerr
 
 import (
 	ut "github.com/go-playground/universal-translator"
@@ -20,7 +20,7 @@ type (
 	}
 )
 
-func NewValidationError(err error, ut ut.Translator) GenericError {
+func NewValidationError(err error, ut ut.Translator) Error {
 	castedErr, ok := err.(validator.ValidationErrors)
 	if !ok {
 		panic("error is not validation error")
@@ -59,7 +59,7 @@ func (v *validatorError) ResponseStatus() string {
 	return http.StatusText(ValidatorErrorHttpStatus)
 }
 
-func (v *validatorError) Equal(err GenericError) bool {
+func (v *validatorError) Equal(err Error) bool {
 	casted, ok := err.(*validatorError)
 	if !ok {
 		return false

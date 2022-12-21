@@ -1,7 +1,7 @@
 package response
 
 import (
-	cmn_err "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/error"
 )
 
 type (
@@ -41,7 +41,7 @@ func New(resp HttpResponse) Response {
 		},
 	}
 	normal, ok := resp.(OkHttpResponse)
-	err, ok2 := resp.(cmn_err.GenericError)
+	err, ok2 := resp.(gerr.Error)
 	if ok && ok2 {
 		panic("ambigous http response")
 	} else if ok {
