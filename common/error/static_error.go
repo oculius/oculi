@@ -1,11 +1,16 @@
 package gerr
 
 import (
+	"github.com/pkg/errors"
 	"net/http"
-	"reflect"
 )
 
 type (
+	staticErrorSeed struct {
+		detail     string
+		httpStatus int
+	}
+
 	staticError struct {
 		source     error
 		detail     string
@@ -14,8 +19,17 @@ type (
 	}
 )
 
-func NewError(source error, detail string, httpStatus int, metadata any) Error {
-	return &staticError{source, detail, httpStatus, metadata}
+func NewError(detail string, httpStatus int) ErrorSeed {
+	return newSeed(&staticErrorSeed{detail, httpStatus})
+}
+
+func (s *staticErrorSeed) Build(source error, metadata any, _ ...interface{}) Error {
+	if source == nil {
+		source = errors.New(s.detail)
+	}
+	return &staticError{
+		source: source, metadata: metadata, detail: s.detail, httpStatus: s.httpStatus,
+	}
 }
 
 func (s *staticError) Error() string {
@@ -40,7 +54,7 @@ func (s *staticError) Equal(err Error) bool {
 		return false
 	}
 	return s.httpStatus == err.ResponseCode() && s.source.Error() == err.Error() &&
-		s.detail == err.Detail() && reflect.DeepEqual(s.metadata, err.Metadata())
+		s.detail == err.Detail()
 }
 
 func (s *staticError) Metadata() any {
