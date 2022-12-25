@@ -6,6 +6,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/oculius/oculi/v2/common/response"
+	"github.com/oculius/oculi/v2/server/oculi"
 	"os"
 	"os/signal"
 	"syscall"
@@ -53,64 +55,38 @@ func (w *WebServer) Run() error {
 }
 
 func (w *WebServer) start() error {
-	w.resource.Echo().Use(middleware.Recover())
+	echoEngine := w.resource.Echo()
+	echoEngine.Use(middleware.Recover())
 	// TODO Server/Validator
-	// w.resource.Echo().Validator = w.resource.Validator()
-	w.resource.Echo().Logger = w.resource.Logger()
-	w.resource.Echo().Logger.SetLevel(log.INFO)
+	// echoEngine.Validator = w.resource.Validator()
+	echoEngine.Logger = w.resource.Logger()
+	echoEngine.Logger.SetLevel(log.INFO)
 
 	if w.useDefaultGZip {
-		w.resource.Echo().Use(middleware.Gzip())
+		echoEngine.Use(middleware.Gzip())
 	}
 
-	//if w.useDefaultCors {
-	//	w.resource.Echo().Use(middleware.CORSWithConfig(middleware.CORSConfig{
-	//		AllowOrigins: []string{"*"},
-	//		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAcceptEncoding},
-	//	}))
-	//}
+	echoEngine.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			oculiCtx, ok := c.(oculi.Context)
+			if !ok {
+				oculiCtx = oculi.New(c)
+			}
+			return next(oculiCtx)
+		}
+	})
 
-	// TODO Server/Custom Context
-	//w.resource.Echo().Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-	//	return func(c echo.Context) error {
-	//		ctx, ok := c.(*oculiContext.Context)
-	//		if !ok {
-	//			ctx = oculiContext.New(c)
-	//		}
-	//		return next(ctx)
-	//	}
-	//})
-
-	// TODO Server/Not Found Handler
-	//echo.NotFoundHandler = func(c echo.Context) error {
-	//	ctx := oculiContext.New(c)
-	//	ctx.AddError(http.StatusNotFound, errors.New("not found"))
-	//	return ctx.JSONPretty(
-	//		ctx.ResponseCode(),
-	//		NotFoundStruct{
-	//			Code:    ctx.ResponseCode(),
-	//			Message: ctx.Errors()[0].Error(),
-	//		},
-	//		" ",
-	//	)
-	//}
-
-	// TODO Server/Method Not Allowed
-	//echo.MethodNotAllowedHandler = func(c echo.Context) error {
-	//	ctx := oculiContext.New(c)
-	//	ctx.AddError(http.StatusMethodNotAllowed, errors.New("method not allowed"))
-	//	return ctx.JSONPretty(
-	//		ctx.ResponseCode(),
-	//		NotFoundStruct{
-	//			Code:    ctx.ResponseCode(),
-	//			Message: ctx.Errors()[0].Error(),
-	//		},
-	//		" ",
-	//	)
-	//}
+	echo.NotFoundHandler = func(c echo.Context) error {
+		err := ErrNotFound(nil, nil)
+		return c.JSON(err.ResponseCode(), response.New(err))
+	}
+	echo.MethodNotAllowedHandler = func(c echo.Context) error {
+		err := ErrMethodNotAllowed(nil, nil)
+		return c.JSON(err.ResponseCode(), response.New(err))
+	}
 
 	// TODO Server/Service Information
-	//w.resource.Echo().GET("/", func(c echo.Context) error {
+	//echoEngine.GET("/", func(c echo.Context) error {
 	//	return c.JSONPretty(
 	//		http.StatusOK,
 	//		ServiceInfo{
@@ -121,14 +97,12 @@ func (w *WebServer) start() error {
 	//	)
 	//})
 
-	if err := w.restApi.Register(w.resource.Echo()); err != nil {
-		// TODO Server/Logger Error Log
-		// w.resource.Logger().Error("error on register http")
+	if err := w.restApi.Init(echoEngine); err != nil {
+		w.resource.Logger().Error("error on init http server")
 		return err
 	}
 
-	w.resource.Identifier()
-	w.resource.Echo().GET("/health", w.restApi.Health())
+	echoEngine.GET("/health", w.restApi.Health())
 	return nil
 }
 

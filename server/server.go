@@ -2,7 +2,9 @@ package server
 
 import (
 	"github.com/labstack/echo/v4"
+	gerr "github.com/oculius/oculi/v2/common/error"
 	"github.com/oculius/oculi/v2/common/logs"
+	"net/http"
 	"time"
 )
 
@@ -21,7 +23,6 @@ type (
 		Echo() *echo.Echo
 		ServiceName() string
 		ServerPort() int
-		Identifier() string
 		Uptime() time.Time
 		Logger() logs.Logger
 		// Validator() validator.Validator
@@ -29,7 +30,7 @@ type (
 	}
 
 	RestAPI interface {
-		Register(ec *echo.Echo) error
+		Init(echoEngine *echo.Echo) error
 		Health() echo.HandlerFunc
 	}
 
@@ -58,3 +59,8 @@ type (
 )
 
 var _ Engine = &WebServer{}
+
+var (
+	ErrNotFound         = gerr.NewError("not found", http.StatusNotFound)
+	ErrMethodNotAllowed = gerr.NewError("not found", http.StatusMethodNotAllowed)
+)
