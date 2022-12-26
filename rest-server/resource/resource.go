@@ -3,7 +3,7 @@ package resource
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/oculius/oculi/v2/common/logs"
-	"github.com/oculius/oculi/v2/server"
+	"github.com/oculius/oculi/v2/rest-server"
 	"github.com/pkg/errors"
 	"strings"
 	"time"
@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func New(serverName string, serverPort int, l logs.Logger, e *echo.Echo) server.Resource {
+func New(serverName string, serverPort int, l logs.Logger, e *echo.Echo) rest_server.Resource {
 	return &resource{
 		serverName, serverPort, l, e, time.Now(),
 	}

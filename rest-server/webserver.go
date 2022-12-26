@@ -1,4 +1,4 @@
-package server
+package rest_server
 
 import (
 	"context"
@@ -6,8 +6,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	gerr "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/common/response"
-	"github.com/oculius/oculi/v2/server/oculi"
+	"github.com/oculius/oculi/v2/rest-server/oculi"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -84,6 +87,44 @@ func (w *WebServer) start() error {
 		err := ErrMethodNotAllowed(nil, nil)
 		return c.JSON(err.ResponseCode(), response.New(err))
 	}
+	echoEngine.HTTPErrorHandler = func(err error, c echo.Context) {
+		if c.Response().Committed {
+			w.resource.Logger().OError(
+				logs.NewInfo("http error handler: response already committed, got error",
+					logs.KV("error", err.Error()),
+					logs.KV("error_obj", fmt.Sprintf("%+v", err)),
+				),
+			)
+			return
+		}
+
+		genericError, ok := err.(gerr.Error)
+		if !ok {
+			httpError, ok2 := err.(*echo.HTTPError)
+			if ok2 {
+				genericError = gerr.New("unknown http error", httpError.Code)(httpError.Internal, httpError.Message)
+			} else {
+				genericError = gerr.New("unknown error", http.StatusInternalServerError)(err, nil)
+			}
+		}
+
+		var logErr error
+
+		if c.Request().Method == http.MethodHead {
+			logErr = c.NoContent(genericError.ResponseCode())
+		} else {
+			logErr = c.JSON(genericError.ResponseCode(), response.New(genericError))
+		}
+
+		if logErr != nil {
+			w.resource.Logger().OError(
+				logs.NewInfo("http error handler: while committing error response, got error",
+					logs.KV("error", err.Error()),
+					logs.KV("error_obj", fmt.Sprintf("%+v", err)),
+				),
+			)
+		}
+	}
 
 	// TODO Server/Service Information
 	//echoEngine.GET("/", func(c echo.Context) error {
@@ -98,17 +139,19 @@ func (w *WebServer) start() error {
 	//})
 
 	if err := w.restApi.Init(echoEngine); err != nil {
-		w.resource.Logger().Error("error on init http server")
+		w.resource.Logger().Error("error on init http rest-server")
 		return err
 	}
 
-	echoEngine.GET("/health", w.restApi.Health())
+	if w.restApi.Health() != nil {
+		echoEngine.GET("/health", oculi.H(w.restApi.Health()))
+	}
 	return nil
 }
 
 func (w *WebServer) serve(sig chan os.Signal) {
 	if err := w.resource.Echo().Start(fmt.Sprintf(":%d", w.resource.ServerPort())); err != nil {
-		w.resource.Logger().Errorf("http server interrupted %s", err.Error())
+		w.resource.Logger().Errorf("http rest-server interrupted %s", err.Error())
 		sig <- syscall.SIGINT
 	} else {
 		w.resource.Logger().Info("starting apps")
@@ -120,7 +163,7 @@ func (w *WebServer) stop() {
 	defer cancel()
 
 	if err := w.resource.Echo().Shutdown(ctx); err != nil {
-		w.resource.Logger().Errorf("failed to shutdown http server %s", err)
+		w.resource.Logger().Errorf("failed to shutdown http rest-server %s", err)
 	}
 
 	w.resource.Logger().Info("closing resource")
