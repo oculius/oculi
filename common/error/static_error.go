@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func NewError(detail string, httpStatus int) ErrorSeed {
+func New(detail string, httpStatus int) ErrorSeed {
 	return newSeed(&staticErrorSeed{detail, httpStatus})
 }
 

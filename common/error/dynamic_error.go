@@ -21,7 +21,7 @@ type (
 	}
 )
 
-func NewErrorSeed(id string, formatter func(...interface{}) string, conditionalHttpStatus func(error) int) ErrorSeed {
+func NewConditional(id string, formatter func(...interface{}) string, conditionalHttpStatus func(error) int) ErrorSeed {
 	return newSeed(&dynamicErrorSeed{
 		id, formatter, conditionalHttpStatus,
 	})

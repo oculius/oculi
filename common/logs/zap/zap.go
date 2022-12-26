@@ -258,11 +258,7 @@ func (z *zapLogger) Instance() interface{} {
 }
 
 func (z *zapLogger) setupBaseLogger(info logs.Info) *zap.SugaredLogger {
-	logging := z.instance
-	for key, message := range info.Metadata() {
-		logging = logging.With(key, message)
-	}
-	return logging
+	return z.instance.With("metadata", info.Metadata())
 }
 
 func (z *zapLogger) OPrint(info logs.Info) {
