@@ -1,4 +1,4 @@
-package rest_server
+package rest
 
 import (
 	"context"
@@ -73,7 +73,7 @@ func (w *WebServer) start() error {
 		return func(c echo.Context) error {
 			oculiCtx, ok := c.(oculi.Context)
 			if !ok {
-				oculiCtx = oculi.New(c)
+				oculiCtx = oculi.NewContext(c)
 			}
 			return next(oculiCtx)
 		}

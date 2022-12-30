@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func New(serverName string, serverPort int, l logs.Logger, e *echo.Echo) rest_server.Resource {
+func New(serverName string, serverPort int, l logs.Logger, e *echo.Echo) rest.Resource {
 	return &resource{
 		serverName, serverPort, l, e, time.Now(),
 	}

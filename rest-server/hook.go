@@ -1,4 +1,4 @@
-package rest_server
+package rest
 
 func (w *WebServer) BeforeRun(hf HookFunction) Engine {
 	w.beforeRun = append(w.beforeRun, hf)

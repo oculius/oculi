@@ -2,11 +2,10 @@ package oculi
 
 import (
 	"context"
-	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	gerr "github.com/oculius/oculi/v2/common/error"
-	"net/http"
+	"github.com/oculius/oculi/v2/rest-server/oculi/token"
 )
 
 type (
@@ -18,28 +17,23 @@ type (
 	Context interface {
 		echo.Context
 		BindValidate(interface{}) gerr.Error
-		Lookup(...Token) (map[string]Token, gerr.Error)
+		Lookup(...token.Token) (map[string]token.Token, gerr.Error)
 	}
 )
 
-var (
-	FailedBindingHttpStatus               = http.StatusBadRequest
-	Translator              ut.Translator = nil
-)
-
-func New(echoCtx echo.Context) Context {
+func NewContext(echoCtx echo.Context) Context {
 	return &oculiContext{
 		Context: echoCtx,
 		ctx:     echoCtx.Request().Context(),
 	}
 }
 
-func (c *oculiContext) Lookup(tokens ...Token) (map[string]Token, gerr.Error) {
+func (c *oculiContext) Lookup(tokens ...token.Token) (map[string]token.Token, gerr.Error) {
 	N := len(tokens)
 	if N == 0 {
 		return nil, nil
 	}
-	result := make(map[string]Token, N)
+	result := make(map[string]token.Token, N)
 	for _, t := range tokens {
 		err := t.Apply(c.Context)
 		if err != nil {
@@ -49,11 +43,6 @@ func (c *oculiContext) Lookup(tokens ...Token) (map[string]Token, gerr.Error) {
 	}
 	return result, nil
 }
-
-var (
-	ErrDataBinding    = gerr.New("data binding failed", FailedBindingHttpStatus)
-	ErrDataValidation = gerr.New("data validation failed", http.StatusInternalServerError)
-)
 
 func (c *oculiContext) BindValidate(obj interface{}) gerr.Error {
 	if err := c.Bind(obj); err != nil {
