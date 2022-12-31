@@ -1,10 +1,12 @@
-package zap
+package ozap
 
 import (
 	"github.com/labstack/gommon/log"
 	"github.com/oculius/oculi/v2/common/logs"
 	"go.uber.org/zap"
 	"io"
+	"os"
+	"time"
 )
 
 type (
@@ -12,12 +14,14 @@ type (
 		instance *zap.SugaredLogger
 		prefix   string
 		level    log.Lvl
+		out      io.Writer
 	}
 
 	LoggerOption struct {
 		DevelopmentMode bool
 		Level           log.Lvl
 		Prefix          string
+		Output          io.Writer
 	}
 )
 
@@ -42,24 +46,26 @@ func New(logOption LoggerOption, options ...zap.Option) (logs.Logger, error) {
 		instance: instance.Sugar(),
 		level:    logOption.Level,
 		prefix:   logOption.Prefix,
+		out:      logOption.Output,
 	}, nil
 }
 
 // NewDevelopment is a method for constructing new Zap Logger for development env
 func NewDevelopment(options ...zap.Option) (logs.Logger, error) {
-	return New(LoggerOption{true, log.DEBUG, ""}, options...)
+	return New(LoggerOption{true, log.DEBUG, "", os.Stdout}, options...)
 }
 
 // NewProduction is a method for constructing new Zap Logger for production env
 func NewProduction(options ...zap.Option) (logs.Logger, error) {
-	return New(LoggerOption{false, log.INFO, ""}, options...)
+	return New(LoggerOption{false, log.INFO, "", os.Stdout}, options...)
 }
 
 func (z *zapLogger) Output() io.Writer {
-	return nil
+	return z.out
 }
 
 func (z *zapLogger) SetOutput(w io.Writer) {
+	z.out = w
 }
 
 func (z *zapLogger) Prefix() string {
@@ -258,7 +264,7 @@ func (z *zapLogger) Instance() interface{} {
 }
 
 func (z *zapLogger) setupBaseLogger(info logs.Info) *zap.SugaredLogger {
-	return z.instance.With("metadata", info.Metadata())
+	return z.instance.With("metadata", info.Metadata(), "timestamp", time.Now().UTC().Format(time.RFC3339Nano))
 }
 
 func (z *zapLogger) OPrint(info logs.Info) {
