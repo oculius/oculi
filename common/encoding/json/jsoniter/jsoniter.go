@@ -1,4 +1,4 @@
-package jsoniter
+package ojsoniter
 
 import (
 	jlib "github.com/json-iterator/go"
