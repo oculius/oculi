@@ -20,7 +20,7 @@ type (
 )
 
 func New(detail string, httpStatus int) ErrorSeed {
-	return newSeed(&staticErrorSeed{detail, httpStatus})
+	return (&staticErrorSeed{detail, httpStatus}).Build
 }
 
 func (s *staticErrorSeed) Build(source error, metadata any, _ ...interface{}) Error {

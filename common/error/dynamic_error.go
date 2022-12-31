@@ -22,9 +22,9 @@ type (
 )
 
 func NewConditional(id string, formatter func(...interface{}) string, conditionalHttpStatus func(error) int) ErrorSeed {
-	return newSeed(&dynamicErrorSeed{
+	return (&dynamicErrorSeed{
 		id, formatter, conditionalHttpStatus,
-	})
+	}).Build
 }
 
 func (d dynamicErrorSeed) Build(source error, metadata any, args ...interface{}) Error {
