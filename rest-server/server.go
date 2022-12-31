@@ -1,27 +1,27 @@
 package rest
 
 import (
-	"github.com/labstack/echo/v4"
 	gerr "github.com/oculius/oculi/v2/common/error"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/rest-server/oculi"
 	"net/http"
+	"os"
 	"time"
 )
 
 type (
-	Engine interface {
+	Server interface {
 		Run() error
-		DevelopmentMode()
+		Signal(signal os.Signal)
 
-		BeforeRun(hf HookFunction) Engine
-		AfterRun(hf HookFunction) Engine
-		BeforeExit(hf HookFunction) Engine
-		AfterExit(hf HookFunction) Engine
+		BeforeRun(HookFunction) Server
+		AfterRun(HookFunction) Server
+		BeforeExit(HookFunction) Server
+		AfterExit(HookFunction) Server
 	}
 
 	Resource interface {
-		Echo() *echo.Echo
+		Engine() oculi.Engine
 		ServiceName() string
 		ServerPort() int
 		Uptime() time.Time
@@ -30,36 +30,27 @@ type (
 		Close() error
 	}
 
-	RestAPI interface {
-		Init(echoEngine *echo.Echo) error
+	MainController interface {
+		Init(oculi.Engine) error
 		Health() oculi.HandlerFunc
+	}
+
+	Controller interface {
+		Init(oculi.RouteGroup) error
 	}
 
 	Config interface {
 		ServerGracefullyDuration() time.Duration
-		Instance() any
 	}
 
 	HookFunction func(res Resource) error
 
-	WebServer struct {
-		restApi        RestAPI
-		resource       Resource
-		config         Config
-		useDefaultGZip bool
-
-		afterRun   []HookFunction
-		beforeRun  []HookFunction
-		beforeExit []HookFunction
-		afterExit  []HookFunction
-	}
-
 	Option interface {
-		Apply(w *WebServer)
+		Apply(w *webServer)
 	}
 )
 
-var _ Engine = &WebServer{}
+var _ Server = &webServer{}
 
 var (
 	ErrNotFound         = gerr.New("not found", http.StatusNotFound)

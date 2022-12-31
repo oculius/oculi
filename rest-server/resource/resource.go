@@ -1,9 +1,9 @@
 package resource
 
 import (
-	"github.com/labstack/echo/v4"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/rest-server"
+	"github.com/oculius/oculi/v2/rest-server/oculi"
 	"github.com/pkg/errors"
 	"strings"
 	"time"
@@ -14,18 +14,19 @@ type (
 		serverName string
 		serverPort int
 		l          logs.Logger
-		e          *echo.Echo
+		e          oculi.Engine
 		t          time.Time
 	}
 )
 
-func New(serverName string, serverPort int, l logs.Logger, e *echo.Echo) rest.Resource {
+func New(serverName string, serverPort int, l logs.Logger) rest.Resource {
+	e := oculi.New()
 	return &resource{
 		serverName, serverPort, l, e, time.Now(),
 	}
 }
 
-func (r *resource) Echo() *echo.Echo {
+func (r *resource) Engine() oculi.Engine {
 	return r.e
 }
 
@@ -49,7 +50,7 @@ func (r *resource) Close() error {
 
 	var errMessage = make([]string, 0)
 
-	if err := r.Echo().Close(); err != nil {
+	if err := r.Engine().Close(); err != nil {
 		errMessage = append(errMessage, err.Error())
 	}
 

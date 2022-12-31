@@ -9,43 +9,80 @@ import (
 	gerr "github.com/oculius/oculi/v2/common/error"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/common/response"
-	"github.com/oculius/oculi/v2/rest-server/oculi"
+	"github.com/pkg/errors"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-func (w *WebServer) DevelopmentMode() {
-	w.resource.Echo().Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			// TODO Development Logger
-			// start := time.Now()
-			err := next(c)
-			// fmt.Println(formatRequest(c, start))
-			return err
-		}
-	})
+//func (w *webServer) DevelopmentMode() {
+//	w.resource.Engine().Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+//		return func(c echo.Context) error {
+//			// TODO Development Logger
+//			// start := time.Now()
+//			err := next(c)
+//			// fmt.Println(formatRequest(c, start))
+//			return err
+//		}
+//	})
+//}
+
+type (
+	webServer struct {
+		mainController MainController
+		resource       Resource
+		config         Config
+		useDefaultGZip bool
+		signal         chan os.Signal
+
+		afterRun   []HookFunction
+		beforeRun  []HookFunction
+		beforeExit []HookFunction
+		afterExit  []HookFunction
+	}
+)
+
+func New(mc MainController, resource Resource, config Config) (Server, error) {
+	if mc == nil {
+		return nil, errors.New("Main Controller is nil")
+	}
+
+	if resource == nil {
+		return nil, errors.New("Resource is nil")
+	}
+
+	if config == nil {
+		return nil, errors.New("Config is nil")
+	}
+	return &webServer{mc, resource, config,
+		true, make(chan os.Signal, 3), nil, nil, nil, nil,
+	}, nil
 }
 
-func (w *WebServer) Run() error {
+func (w *webServer) Signal(signal os.Signal) {
+	if signal != nil && w.signal != nil {
+		w.signal <- signal
+	}
+}
+
+func (w *webServer) Run() error {
 	if err := w.start(); err != nil {
 		return err
 	}
 
-	sig := make(chan os.Signal, 3)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(w.signal, syscall.SIGINT, syscall.SIGTERM)
 
 	if err := w.apply(w.beforeRun); err != nil {
 		return err
 	}
 
-	go w.serve(sig)
+	go w.serve()
 
 	if err := w.apply(w.afterRun); err != nil {
 		return err
 	}
-	<-sig
+	<-w.signal
 
 	if err := w.apply(w.beforeExit); err != nil {
 		return err
@@ -57,27 +94,17 @@ func (w *WebServer) Run() error {
 	return nil
 }
 
-func (w *WebServer) start() error {
-	echoEngine := w.resource.Echo()
-	echoEngine.Use(middleware.Recover())
+func (w *webServer) start() error {
+	echoEngine := w.resource.Engine()
+	echoEngine.UseEchoMiddleware(middleware.Recover())
 	// TODO Server/Validator
 	// echoEngine.Validator = w.resource.Validator()
 	echoEngine.Logger = w.resource.Logger()
 	echoEngine.Logger.SetLevel(log.INFO)
 
 	if w.useDefaultGZip {
-		echoEngine.Use(middleware.Gzip())
+		echoEngine.UseEchoMiddleware(middleware.Gzip())
 	}
-
-	echoEngine.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			oculiCtx, ok := c.(oculi.Context)
-			if !ok {
-				oculiCtx = oculi.NewContext(c)
-			}
-			return next(oculiCtx)
-		}
-	})
 
 	echo.NotFoundHandler = func(c echo.Context) error {
 		err := ErrNotFound(nil, nil)
@@ -126,43 +153,34 @@ func (w *WebServer) start() error {
 		}
 	}
 
-	// TODO Server/Service Information
-	//echoEngine.GET("/", func(c echo.Context) error {
-	//	return c.JSONPretty(
-	//		http.StatusOK,
-	//		ServiceInfo{
-	//			Name:       w.resource.ServiceName(),
-	//			Identifier: w.resource.Identifier(),
-	//		},
-	//		" ",
-	//	)
-	//})
-
-	if err := w.restApi.Init(echoEngine); err != nil {
+	if err := w.mainController.Init(echoEngine); err != nil {
 		w.resource.Logger().Error("error on init http rest-server")
 		return err
 	}
 
-	if w.restApi.Health() != nil {
-		echoEngine.GET("/health", oculi.H(w.restApi.Health()))
+	if w.mainController.Health() != nil {
+		echoEngine.GET("/health", w.mainController.Health())
 	}
 	return nil
 }
 
-func (w *WebServer) serve(sig chan os.Signal) {
-	if err := w.resource.Echo().Start(fmt.Sprintf(":%d", w.resource.ServerPort())); err != nil {
-		w.resource.Logger().Errorf("http rest-server interrupted %s", err.Error())
-		sig <- syscall.SIGINT
+func (w *webServer) serve() {
+	if err := w.resource.Engine().Start(fmt.Sprintf(":%d", w.resource.ServerPort())); err != nil {
+		w.resource.Logger().Infof("http rest-server interrupted: %s", err.Error())
+		w.signal <- syscall.SIGINT
 	} else {
 		w.resource.Logger().Info("starting apps")
 	}
 }
 
-func (w *WebServer) stop() {
+func (w *webServer) stop() {
 	ctx, cancel := context.WithTimeout(context.Background(), w.config.ServerGracefullyDuration())
-	defer cancel()
+	defer func() {
+		close(w.signal)
+		cancel()
+	}()
 
-	if err := w.resource.Echo().Shutdown(ctx); err != nil {
+	if err := w.resource.Engine().Shutdown(ctx); err != nil {
 		w.resource.Logger().Errorf("failed to shutdown http rest-server %s", err)
 	}
 
