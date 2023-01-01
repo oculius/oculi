@@ -1,5 +1,7 @@
 package logs
 
+import "fmt"
+
 type (
 	Info interface {
 		Message() string
@@ -31,6 +33,38 @@ func KV(key string, value any) Metadata {
 	return singleMetadata{key, value}
 }
 
+func anyToString(item any) string {
+	key, ok := item.(string)
+	if ok {
+		return key
+	}
+
+	stringer, ok := item.(fmt.Stringer)
+	if ok {
+		return stringer.String()
+	}
+
+	return fmt.Sprintf("%#v", item)
+}
+
+// KVs: Multiple Key-Value Metadata
+func KVs(args ...any) Metadata {
+	if len(args) == 0 {
+		return singleMetadata{}
+	}
+
+	if len(args) < 2 {
+		return singleMetadata{anyToString(args[0]), ""}
+	}
+
+	data := make(map[string]any, len(args)/2)
+	for i := 0; i < len(args); i += 2 {
+		key := anyToString(args[i])
+		data[key] = args[i+1]
+	}
+	return groupMetadata(data)
+}
+
 func (sm singleMetadata) Apply(i Info) {
 	i.EditMetadata(sm.key, sm.value)
 }
@@ -55,6 +89,10 @@ func (i *info) Metadata() map[string]any {
 }
 
 func (i *info) EditMetadata(key string, val any) {
+	if len(key) == 0 {
+		return
+	}
+
 	i.metadata[key] = val
 }
 

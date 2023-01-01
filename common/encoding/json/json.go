@@ -1,16 +1,15 @@
 package json
 
-type (
-	Marshaller interface {
-		Marshal(val interface{}) ([]byte, error)
-	}
+import "sync"
 
-	Unmarshaller interface {
+type (
+	Engine interface {
+		Marshal(val interface{}) ([]byte, error)
 		Unmarshal(data []byte, val interface{}) error
 	}
+)
 
-	Engine interface {
-		Marshaller
-		Unmarshaller
-	}
+var (
+	instance Engine
+	once     sync.Once
 )

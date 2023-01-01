@@ -1,16 +1,23 @@
 package config
 
 import (
-	"os"
-	"strings"
-
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
+	"os"
+	"strconv"
 )
 
+func parseBool(val string, def bool) bool {
+	res, err := strconv.ParseBool(val)
+	if err != nil {
+		return def
+	}
+	return res
+}
+
 func New(object interface{}) error {
-	useFileEnv := !(strings.ToLower(os.Getenv("USE_CONFIG_FILE")) == "false")
+	useFileEnv := parseBool(os.Getenv("USE_CONFIG_FILE"), true)
 	filename := os.Getenv("CONFIG_FILE")
 
 	if filename == "" {
