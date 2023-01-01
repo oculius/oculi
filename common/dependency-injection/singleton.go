@@ -1,18 +1,20 @@
 package di
 
-import "sync"
+import (
+	"sync"
+)
 
 var (
-	creator  sync.Once
+	once     sync.Once
 	instance Storage
 )
 
 func Instance() Storage {
-	creator.Do(func() {
+	once.Do(func() {
 		if instance != nil {
 			panic("dependency injection storage: instance is not nil")
 		}
-		instance = &storage{}
+		instance = newStorage()
 	})
 	return instance
 }

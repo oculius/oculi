@@ -6,10 +6,47 @@ import (
 )
 
 type (
+	ValuableComponent interface {
+		Dependencies() []fx.Option
+	}
+
 	Component interface {
-		Construct()
+		Child()
 	}
 )
+
+func parse(item any, options *[]fx.Option) {
+	callableComponent, ok := item.(Component)
+	if ok {
+		callableComponent.Child()
+		return
+	}
+
+	component, ok := item.(ValuableComponent)
+	if ok {
+		res := component.Dependencies()
+		*options = append(*options, res...)
+		return
+	}
+
+	opts, ok := item.([]fx.Option)
+	if ok {
+		*options = append(*options, opts...)
+		return
+	}
+
+	opt, ok := item.(fx.Option)
+	if ok {
+		*options = append(*options, opt)
+		return
+	}
+
+	if reflect.ValueOf(item).Kind() != reflect.Func {
+		return
+	}
+
+	*options = append(*options, P(item))
+}
 
 func Register(items ...any) {
 	var opts []fx.Option
@@ -17,25 +54,14 @@ func Register(items ...any) {
 	i := Instance()
 
 	for _, each := range items {
-		wrapper, ok := each.(Component)
-		if ok {
-			wrapper.Construct()
-			continue
-		}
-
-		fxopts, ok := each.(fx.Option)
-		if ok {
-			opts = append(opts, fxopts)
-			continue
-		}
-
-		if reflect.ValueOf(each).Kind() != reflect.Func {
-			continue
-		}
-		opts = append(opts, P(each))
+		parse(each, &opts)
 	}
 
 	if len(opts) > 0 {
 		i.Add(opts)
 	}
+}
+
+func Dependencies() []fx.Option {
+	return Instance().Build()
 }

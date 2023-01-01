@@ -18,6 +18,13 @@ type (
 	}
 )
 
+func newStorage() Storage {
+	return &storage{
+		RWMutex: sync.RWMutex{},
+		opts:    make([]fx.Option, 0, 25),
+	}
+}
+
 func (s *storage) Add(opts []fx.Option) {
 	s.Lock()
 	defer s.Unlock()
@@ -40,8 +47,13 @@ func (s *storage) Build() []fx.Option {
 
 	X := len(s.opts)
 	result := make([]fx.Option, X)
-	for i, each := range s.opts {
+	i := 0
+	for _, each := range s.opts {
+		if each == nil {
+			continue
+		}
 		result[i] = each
+		i++
 	}
 	return result
 }
