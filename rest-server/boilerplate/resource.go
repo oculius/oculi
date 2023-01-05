@@ -1,4 +1,4 @@
-package resource
+package bp_rest
 
 import (
 	"github.com/oculius/oculi/v2/common/logs"
@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func New(serverName string, serverPort int, l logs.Logger) rest.Resource {
+func Resource(serverName string, serverPort int, l logs.Logger) rest.Resource {
 	e := oculi.New()
 	return &resource{
 		serverName, serverPort, l, e, time.Now(),

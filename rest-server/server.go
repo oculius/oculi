@@ -30,13 +30,21 @@ type (
 		Close() error
 	}
 
-	MainController interface {
-		Init(oculi.Engine) error
+	HealthController interface {
 		Health() oculi.HandlerFunc
 	}
 
+	MainController interface {
+		HealthController
+		RootController
+	}
+
+	RootController interface {
+		Init(engine oculi.Engine) error
+	}
+
 	Controller interface {
-		Init(oculi.RouteGroup) error
+		Init(route oculi.RouteGroup) error
 	}
 
 	Config interface {

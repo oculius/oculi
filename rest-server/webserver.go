@@ -17,7 +17,7 @@ import (
 )
 
 //func (w *webServer) DevelopmentMode() {
-//	w.resource.Engine().Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+//	w.boilerplate.Engine().Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 //		return func(c echo.Context) error {
 //			// TODO Development Logger
 //			// start := time.Now()
@@ -98,7 +98,7 @@ func (w *webServer) start() error {
 	echoEngine := w.resource.Engine()
 	echoEngine.UseEchoMiddleware(middleware.Recover())
 	// TODO Server/Validator
-	// echoEngine.Validator = w.resource.Validator()
+	// echoEngine.Validator = w.boilerplate.Validator()
 	echoEngine.Logger = w.resource.Logger()
 	echoEngine.Logger.SetLevel(log.INFO)
 

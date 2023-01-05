@@ -5,6 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	gerr "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/response"
 	"github.com/oculius/oculi/v2/rest-server/oculi/token"
 )
 
@@ -18,8 +19,23 @@ type (
 		echo.Context
 		BindValidate(interface{}) gerr.Error
 		Lookup(...token.Token) (map[string]token.Token, gerr.Error)
+		Send(response.HttpResponse) error
+		SendPretty(response.HttpResponse) error
+		RequestContext() context.Context
 	}
 )
+
+func (c *oculiContext) RequestContext() context.Context {
+	return c.ctx
+}
+
+func (c *oculiContext) Send(httpResponse response.HttpResponse) error {
+	return c.JSON(httpResponse.ResponseCode(), response.New(httpResponse))
+}
+
+func (c *oculiContext) SendPretty(httpResponse response.HttpResponse) error {
+	return c.JSONPretty(httpResponse.ResponseCode(), response.New(httpResponse), "\t")
+}
 
 func NewContext(echoCtx echo.Context) Context {
 	return &oculiContext{
