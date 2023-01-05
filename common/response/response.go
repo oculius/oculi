@@ -5,16 +5,16 @@ import (
 )
 
 type (
-	Response struct {
-		Code   int          `json:"code"`
-		Status string       `json:"status"`
-		Detail string       `json:"detail"`
-		Data   ResponseData `json:"data,omitempty"`
+	Body struct {
+		Code    int     `json:"code"`
+		Status  string  `json:"status"`
+		Detail  string  `json:"detail"`
+		Content Content `json:"content,omitempty"`
 	}
 
-	ResponseData struct {
+	Content struct {
 		Error    string `json:"error,omitempty"`
-		Content  any    `json:"content,omitempty"`
+		Data     any    `json:"data,omitempty"`
 		Metadata any    `json:"metadata,omitempty"`
 	}
 
@@ -31,12 +31,12 @@ type (
 	}
 )
 
-func New(resp HttpResponse) Response {
-	result := Response{
+func New(resp HttpResponse) Body {
+	result := Body{
 		Code:   resp.ResponseCode(),
 		Status: resp.ResponseStatus(),
 		Detail: resp.Detail(),
-		Data: ResponseData{
+		Content: Content{
 			Metadata: resp.Metadata(),
 		},
 	}
@@ -45,9 +45,9 @@ func New(resp HttpResponse) Response {
 	if ok && ok2 {
 		panic("ambigous http response")
 	} else if ok {
-		result.Data.Content = normal.Content()
+		result.Content.Data = normal.Content()
 	} else if ok2 {
-		result.Data.Error = err.Error()
+		result.Content.Error = err.Error()
 	}
 	return result
 }
