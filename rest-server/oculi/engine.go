@@ -19,7 +19,6 @@ type (
 		Router() *echo.Router
 		Routers() map[string]*echo.Router
 		DefaultHTTPErrorHandler(err error, c echo.Context)
-		Pre(middleware ...MiddlewareFunc)
 		Use(middleware ...MiddlewareFunc)
 		UseEchoMiddleware(middleware ...echo.MiddlewareFunc)
 		CONNECT(path string, h HandlerFunc, m ...MiddlewareFunc) Route
@@ -81,10 +80,6 @@ func (e Engine) NewContext(r *http.Request, w http.ResponseWriter) Context {
 	return C(e.Echo.NewContext(r, w))
 }
 
-func (e Engine) Pre(middleware ...MiddlewareFunc) {
-	e.Echo.Pre(mote(middleware)...)
-}
-
 func (e Engine) Use(middleware ...MiddlewareFunc) {
 	e.Echo.Use(mote(middleware)...)
 }
@@ -94,7 +89,7 @@ func (e Engine) UseEchoMiddleware(middleware ...echo.MiddlewareFunc) {
 }
 
 func (e Engine) generalTransform(path string, h HandlerFunc, m []MiddlewareFunc, fn generalFunc) Route {
-	return NewRoute(fn(path, H(h), mote(m)...))
+	return NewRoute(fn(path, H(h), mote(m)...), h)
 }
 
 func (e Engine) CONNECT(path string, h HandlerFunc, m ...MiddlewareFunc) Route {
@@ -146,11 +141,11 @@ func (e Engine) Match(methods []string, path string, h HandlerFunc, m ...Middlew
 }
 
 func (e Engine) File(path string, file string, m ...MiddlewareFunc) Route {
-	return NewRoute(e.Echo.File(path, file, mote(m)...))
+	return NewRoute(e.Echo.File(path, file, mote(m)...), e.File)
 }
 
 func (e Engine) Add(method string, path string, h HandlerFunc, m ...MiddlewareFunc) Route {
-	return NewRoute(e.Echo.Add(method, path, H(h), mote(m)...))
+	return NewRoute(e.Echo.Add(method, path, H(h), mote(m)...), h)
 }
 
 func (e Engine) Host(name string, m ...MiddlewareFunc) RouteGroup {
@@ -178,13 +173,13 @@ func (e Engine) Routes() []Route {
 }
 
 func (e Engine) Static(pathPrefix string, fsRoot string) Route {
-	return NewRoute(e.Echo.Static(pathPrefix, fsRoot))
+	return NewRoute(e.Echo.Static(pathPrefix, fsRoot), e.Static)
 }
 
 func (e Engine) StaticFS(pathPrefix string, filesystem fs.FS) Route {
-	return NewRoute(e.Echo.StaticFS(pathPrefix, filesystem))
+	return NewRoute(e.Echo.StaticFS(pathPrefix, filesystem), e.StaticFS)
 }
 
 func (e Engine) FileFS(path string, file string, filesystem fs.FS, m ...MiddlewareFunc) Route {
-	return NewRoute(e.Echo.FileFS(path, file, filesystem, mote(m)...))
+	return NewRoute(e.Echo.FileFS(path, file, filesystem, mote(m)...), e.FileFS)
 }

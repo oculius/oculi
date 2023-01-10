@@ -60,31 +60,25 @@ func newRestServer(mc rest.MainController, c rest.Config, res rest.Resource, lc 
 
 // Register Rest Server Provider & Invoker
 // Required Dependencies: rest.HealthController, rest.Config, rest.Resource, *sync.WaitGroup, rest.Controller
-func RestServer(debug bool) di.ValuableComponent {
+func RestServer() di.ValuableComponent {
 	opts := []fx.Option{
 		di.P(newRestServer),
 		di.I(func(srv rest.Server) {}),
 		di.TP(bp_rest.MainController,
-			nil,
 			[]string{
 				`optional:"false"`,
 				`group:"root_ctrl"`,
 			},
-			nil,
-		),
+			nil),
 		di.TS("v1", []string{`name:"v1"`}),
 		di.TP(bp_rest.RootController,
-			[]string{
-				`group:"root_ctrl"`,
-			},
 			[]string{
 				`name:"v1"`,
 				`group:"v1_ctrl"`,
 			},
-			nil),
-	}
-	if !debug {
-		opts = append(opts, fx.NopLogger)
+			[]string{
+				`group:"root_ctrl"`,
+			}),
 	}
 	return &holder{opts}
 }

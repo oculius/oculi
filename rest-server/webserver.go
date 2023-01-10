@@ -73,6 +73,7 @@ func (w *webServer) Run() error {
 
 	signal.Notify(w.signal, syscall.SIGINT, syscall.SIGTERM)
 
+	NewPrinter().Routes(w.resource.Engine().Echo)
 	if err := w.apply(w.beforeRun); err != nil {
 		return err
 	}
@@ -105,6 +106,8 @@ func (w *webServer) start() error {
 	if w.useDefaultGZip {
 		echoEngine.UseEchoMiddleware(middleware.Gzip())
 	}
+
+	echoEngine.UseEchoMiddleware(middleware.RemoveTrailingSlash())
 
 	echo.NotFoundHandler = func(c echo.Context) error {
 		err := ErrNotFound(nil, nil)

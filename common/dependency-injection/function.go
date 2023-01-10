@@ -3,6 +3,7 @@ package di
 import (
 	"github.com/oculius/optio/iterator"
 	"go.uber.org/fx"
+	"strings"
 )
 
 type (
@@ -27,7 +28,7 @@ func I(fn any) fx.Option {
 }
 
 // TP stands for Tagged Provider
-func TP(fn any, resultTag []string, paramTag []string, asInterface ...interface{}) fx.Option {
+func TP(fn any, paramTag []string, resultTag []string, asInterface ...interface{}) fx.Option {
 	f := &function{fn, resultTag, paramTag, asInterface}
 	return f.validate().Build()
 }
@@ -90,28 +91,24 @@ func (f *function) getAnnotations() []fx.Annotation {
 	return annotations
 }
 
-func removeEmptyString(input []string) []string {
-	it := iterator.NewFilterIterFromArr[string](input, func(each string) bool {
-		return len(each) > 0
-	})
-	return it.Collect()
-}
-
 func (f *function) validate() *function {
 	if f.item == nil {
 		panic("illegal nil item/function detected")
 	}
 	if len(f.resultTag) > 0 {
-		f.resultTag = removeEmptyString(f.resultTag)
+		f.resultTag = iterator.Filter(f.resultTag, func(each string) bool {
+			return len(strings.TrimSpace(each)) > 0
+		})
 	}
 	if len(f.paramTag) > 0 {
-		f.paramTag = removeEmptyString(f.paramTag)
+		f.paramTag = iterator.Filter(f.paramTag, func(each string) bool {
+			return len(strings.TrimSpace(each)) > 0
+		})
 	}
 	if len(f.asInterface) > 0 {
-		it := iterator.NewFilterIterFromArr[any](f.asInterface, func(each any) bool {
+		f.asInterface = iterator.Filter(f.asInterface, func(each any) bool {
 			return each != nil
 		})
-		f.asInterface = it.Collect()
 	}
 	return f
 }
