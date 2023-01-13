@@ -18,10 +18,6 @@ type (
 
 var printerInstance = printer{colorizer: color.New()}
 
-func NewPrinter() printer {
-	return printerInstance
-}
-
 func (p printer) methodColor(method string) string {
 	methodStr := fmt.Sprintf(" %-7s ", method)
 	switch method {
@@ -60,7 +56,7 @@ func (p printer) statusCodeColor(code int) string {
 	}
 }
 
-func (p printer) FormatRequest(ec echo.Context, start time.Time) string {
+func (p printer) fmtRequest(ec echo.Context, start time.Time) string {
 	now := time.Now()
 	statusCode := ec.Response().Status
 	method := ec.Request().Method
@@ -69,7 +65,7 @@ func (p printer) FormatRequest(ec echo.Context, start time.Time) string {
 	if ec.QueryString() != "" {
 		path = path + "?" + ec.QueryString()
 	}
-	return fmt.Sprintf("%-30v | %s | %13v | %15s |%-7s %s",
+	return fmt.Sprintf("%-30v | %s | %13v | %15s |%-7s %s\n",
 		now.Format(time.RFC1123),
 		p.statusCodeColor(statusCode),
 		latency,
@@ -88,8 +84,7 @@ Compact & intact Go web framework
 ----------------------------------
 `
 
-func (p printer) Routes(ec *echo.Echo) {
-	ec.HideBanner = true
+func (p printer) printRoutes(ec *echo.Echo) {
 	colorizer := color.New()
 	colorizer.SetOutput(ec.Logger.Output())
 

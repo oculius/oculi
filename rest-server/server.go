@@ -49,6 +49,7 @@ type (
 
 	Config interface {
 		ServerGracefullyDuration() time.Duration
+		IsDevelopmentMode() bool
 	}
 
 	HookFunction func(res Resource) error

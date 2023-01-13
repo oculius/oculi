@@ -9,24 +9,14 @@ import (
 	gerr "github.com/oculius/oculi/v2/common/error"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/common/response"
+	"github.com/oculius/oculi/v2/rest-server/oculi"
 	"github.com/pkg/errors"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
-
-//func (w *webServer) DevelopmentMode() {
-//	w.boilerplate.Engine().Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-//		return func(c echo.Context) error {
-//			// TODO Development Logger
-//			// start := time.Now()
-//			err := next(c)
-//			// fmt.Println(formatRequest(c, start))
-//			return err
-//		}
-//	})
-//}
 
 type (
 	webServer struct {
@@ -60,6 +50,22 @@ func New(mc MainController, resource Resource, config Config) (Server, error) {
 	}, nil
 }
 
+func (w *webServer) requestPrinter(next oculi.HandlerFunc) oculi.HandlerFunc {
+	return func(c oculi.Context) error {
+		start := time.Now()
+		err := next(c)
+		_, errfmt := fmt.Fprint(w.resource.Logger().Output(), printerInstance.fmtRequest(c, start))
+		if errfmt != nil {
+			w.resource.Logger().OError(
+				logs.NewInfo("request formatting error",
+					logs.KVs("error", err.Error()),
+				),
+			)
+		}
+		return err
+	}
+}
+
 func (w *webServer) Signal(signal os.Signal) {
 	if signal != nil && w.signal != nil {
 		w.signal <- signal
@@ -72,8 +78,11 @@ func (w *webServer) Run() error {
 	}
 
 	signal.Notify(w.signal, syscall.SIGINT, syscall.SIGTERM)
-
-	NewPrinter().Routes(w.resource.Engine().Echo)
+	w.resource.Engine().Echo.HideBanner = true
+	if w.config.IsDevelopmentMode() {
+		w.resource.Engine().Use(w.requestPrinter)
+		printerInstance.printRoutes(w.resource.Engine().Echo)
+	}
 	if err := w.apply(w.beforeRun); err != nil {
 		return err
 	}
@@ -83,6 +92,8 @@ func (w *webServer) Run() error {
 	if err := w.apply(w.afterRun); err != nil {
 		return err
 	}
+
+	w.resource.Logger().Info("http rest-server started")
 	<-w.signal
 
 	if err := w.apply(w.beforeExit); err != nil {
@@ -169,7 +180,7 @@ func (w *webServer) start() error {
 
 func (w *webServer) serve() {
 	if err := w.resource.Engine().Start(fmt.Sprintf(":%d", w.resource.ServerPort())); err != nil {
-		w.resource.Logger().Infof("http rest-server interrupted: %s", err.Error())
+		w.resource.Logger().Infof("http rest-server stopped, %s", err.Error())
 		w.signal <- syscall.SIGINT
 	} else {
 		w.resource.Logger().Info("starting apps")
