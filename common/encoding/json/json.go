@@ -1,15 +1,19 @@
 package json
 
-import "sync"
+import (
+	"github.com/json-iterator/go"
+	"sync"
+)
 
 type (
-	Engine interface {
+	Parser interface {
 		Marshal(val interface{}) ([]byte, error)
 		Unmarshal(data []byte, val interface{}) error
+		API() jsoniter.API
 	}
 )
 
 var (
-	instance Engine
+	instance Parser
 	once     sync.Once
 )
