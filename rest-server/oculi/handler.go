@@ -35,8 +35,7 @@ func M(mwFn MiddlewareFunc) echo.MiddlewareFunc {
 	return func(nextEcho echo.HandlerFunc) echo.HandlerFunc {
 		nextOculi := NewHandlerFunc(nextEcho)
 		fnResultOculi := mwFn(nextOculi)
-		fnResultEcho := H(fnResultOculi)
-		return fnResultEcho
+		return H(fnResultOculi)
 	}
 }
 

@@ -1,7 +1,7 @@
 package tp
 
 import (
-	gerr "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/error-extension"
 	"strconv"
 )
 
@@ -13,7 +13,7 @@ func BoolParser() Parser {
 	return boolParser{}
 }
 
-func (b boolParser) Parse(t Token, value any) (any, gerr.Error) {
+func (b boolParser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString

@@ -1,4 +1,4 @@
-package gerr
+package errext
 
 import (
 	ut "github.com/go-playground/universal-translator"

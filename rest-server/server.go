@@ -1,7 +1,7 @@
 package rest
 
 import (
-	gerr "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/error-extension"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/rest-server/oculi"
 	"net/http"
@@ -34,18 +34,21 @@ type (
 		Health() oculi.HandlerFunc
 	}
 
-	MainController interface {
+	Initiable[T any] interface {
+		Init(required T) error
+	}
+
+	Core interface {
 		HealthController
-		RootController
+		Module
 	}
 
-	RootController interface {
-		Init(engine oculi.Engine) error
-	}
+	Module    Initiable[oculi.Engine]
+	Component Initiable[oculi.RouteGroup]
 
-	Controller interface {
-		Init(route oculi.RouteGroup) error
-	}
+	//Component interface {
+	//	Init(route oculi.RouteGroup) error
+	//}
 
 	Config interface {
 		ServerGracefullyDuration() time.Duration
@@ -62,6 +65,6 @@ type (
 var _ Server = &webServer{}
 
 var (
-	ErrNotFound         = gerr.New("not found", http.StatusNotFound)
-	ErrMethodNotAllowed = gerr.New("not found", http.StatusMethodNotAllowed)
+	ErrNotFound         = errext.New("not found", http.StatusNotFound)
+	ErrMethodNotAllowed = errext.New("not found", http.StatusMethodNotAllowed)
 )

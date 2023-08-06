@@ -2,7 +2,7 @@ package tp
 
 import (
 	"github.com/gofrs/uuid"
-	gerr "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/error-extension"
 	"time"
 )
 
@@ -14,7 +14,7 @@ type (
 	timeParser struct{}
 )
 
-func (s stringParser) Parse(_ Token, value any) (any, gerr.Error) {
+func (s stringParser) Parse(_ Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -34,7 +34,7 @@ func TimeParser() Parser {
 	return timeParser{}
 }
 
-func (tps timeParser) Parse(t Token, value any) (any, gerr.Error) {
+func (tps timeParser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -47,7 +47,7 @@ func (tps timeParser) Parse(t Token, value any) (any, gerr.Error) {
 	return conVal, nil
 }
 
-func (u uuidStringParser) Parse(t Token, value any) (any, gerr.Error) {
+func (u uuidStringParser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString

@@ -12,7 +12,7 @@ var (
 func Instance() Storage {
 	once.Do(func() {
 		if instance != nil {
-			panic("dependency injection storage: instance is not nil")
+			panic("dependency injection storage: instance is not nil. perhaps race condition occur?")
 		}
 		instance = newStorage()
 	})

@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	ValuableComponent interface {
+	IndirectDependency interface {
 		Dependencies() []fx.Option
 	}
 
@@ -22,7 +22,7 @@ func parse(item any, options *[]fx.Option) {
 		return
 	}
 
-	component, ok := item.(ValuableComponent)
+	component, ok := item.(IndirectDependency)
 	if ok {
 		res := component.Dependencies()
 		*options = append(*options, res...)

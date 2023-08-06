@@ -3,7 +3,7 @@ package token
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
-	gerr "github.com/oculius/oculi/v2/common/error"
+	errext "github.com/oculius/oculi/v2/common/error-extension"
 	tf2 "github.com/oculius/oculi/v2/rest-server/oculi/token/token-fetcher"
 	tp2 "github.com/oculius/oculi/v2/rest-server/oculi/token/token-parser"
 	"mime/multipart"
@@ -22,12 +22,12 @@ type (
 	}
 
 	Token interface {
-		Value() any
+		rawvalue() any
 		Key() string
 		IsRequired() bool
 		Source() TokenSource
 		Type() Kind
-		Apply(ctx echo.Context) gerr.Error
+		Apply(ctx echo.Context) errext.Error
 		String() string
 	}
 
@@ -50,7 +50,7 @@ func (t *token) String() string {
 	return fmt.Sprintf("%s:%s=%+v", t.source.String(), t.key, t.value)
 }
 
-func (t *token) Value() any {
+func (t *token) rawvalue() any {
 	return t.value
 }
 
@@ -83,7 +83,7 @@ func (t *token) DataTypeString() string {
 	return t.dataType.String()
 }
 
-func (t *token) getValue(ctx echo.Context) (string, *multipart.FileHeader, gerr.Error) {
+func (t *token) getValue(ctx echo.Context) (string, *multipart.FileHeader, errext.Error) {
 	var (
 		fh         *multipart.FileHeader
 		val        string
@@ -127,7 +127,7 @@ func (t *token) getValue(ctx echo.Context) (string, *multipart.FileHeader, gerr.
 	return val, fh, nil
 }
 
-func (t *token) checkEmpty(val string, formFile *multipart.FileHeader) (bool, gerr.Error) {
+func (t *token) checkEmpty(val string, formFile *multipart.FileHeader) (bool, errext.Error) {
 	if (t.dataType.IsFromFormFile() && formFile == nil) || (!t.dataType.IsFromFormFile() && len(val) == 0) {
 		t.value = nil
 		if t.isRequired {
@@ -139,7 +139,7 @@ func (t *token) checkEmpty(val string, formFile *multipart.FileHeader) (bool, ge
 	return false, nil
 }
 
-func (t *token) parse(val string, ff *multipart.FileHeader) gerr.Error {
+func (t *token) parse(val string, ff *multipart.FileHeader) errext.Error {
 	var parser tp2.Parser
 	switch t.dataType {
 	case Bool:
@@ -187,7 +187,7 @@ func (t *token) parse(val string, ff *multipart.FileHeader) gerr.Error {
 	}
 
 	var result any
-	var err gerr.Error
+	var err errext.Error
 	if t.dataType.IsFromFormFile() {
 		result, err = parser.Parse(t, ff)
 	} else {
@@ -200,7 +200,7 @@ func (t *token) parse(val string, ff *multipart.FileHeader) gerr.Error {
 	return nil
 }
 
-func (t *token) Apply(ctx echo.Context) gerr.Error {
+func (t *token) Apply(ctx echo.Context) errext.Error {
 	val, formFile, err := t.getValue(ctx)
 	if err != nil {
 		return err
@@ -220,9 +220,9 @@ func (t *token) Apply(ctx echo.Context) gerr.Error {
 	return nil
 }
 
-func ExtractTokenValue[T ExtractTypeLimiter](token Token) (T, gerr.Error) {
+func TokenValue[T ExtractTypeLimiter](token Token) (T, errext.Error) {
 	var result T
-	val := token.Value()
+	val := token.rawvalue()
 	if val == nil {
 		return result, nil
 	}

@@ -1,4 +1,4 @@
-package gerr
+package errext
 
 import (
 	"github.com/pkg/errors"
@@ -19,9 +19,12 @@ type (
 		metadata   any
 		seed       dynamicErrorSeed
 	}
+
+	FormatFunc        func(...interface{}) string
+	HttpStatusMapFunc func(error) int
 )
 
-func NewConditional(id string, formatter func(...interface{}) string, conditionalHttpStatus func(error) int) ErrorSeed {
+func NewConditional(id string, formatter FormatFunc, conditionalHttpStatus HttpStatusMapFunc) ErrorSeed {
 	return (&dynamicErrorSeed{
 		id, formatter, conditionalHttpStatus,
 	}).Build

@@ -1,5 +1,6 @@
 package constant
 
 const (
-	Version string = "1.0.0"
+	Version       string = "1.0.0"
+	VersionNumber int    = 100
 )

@@ -1,11 +1,14 @@
 package config
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func parseBool(val string, def bool) bool {
@@ -14,6 +17,25 @@ func parseBool(val string, def bool) bool {
 		return def
 	}
 	return res
+}
+
+func NewYaml(object any, filename string) error {
+	if fileInfo, err := os.Stat(filename); os.IsNotExist(err) {
+		return err
+	} else if !strings.HasSuffix(fileInfo.Name(), ".yml") &&
+		!strings.HasSuffix(fileInfo.Name(), ".yaml") {
+		return errors.New(fmt.Sprintf("config: file '%s' is not yml/yaml", filename))
+	}
+	buff, err := os.ReadFile(filename)
+	if err != nil {
+		return errors.Wrap(err, "failed to read yaml file")
+	}
+
+	err = yaml.Unmarshal(buff, object)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse file data to yaml")
+	}
+	return nil
 }
 
 func New(object interface{}) error {

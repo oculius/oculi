@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	gerr "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/error-extension"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/common/response"
 	"github.com/oculius/oculi/v2/rest-server/oculi"
@@ -20,7 +20,7 @@ import (
 
 type (
 	webServer struct {
-		mainController MainController
+		core           Core
 		resource       Resource
 		config         Config
 		useDefaultGZip bool
@@ -33,9 +33,9 @@ type (
 	}
 )
 
-func New(mc MainController, resource Resource, config Config) (Server, error) {
-	if mc == nil {
-		return nil, errors.New("Main Controller is nil")
+func New(core Core, resource Resource, config Config) (Server, error) {
+	if core == nil {
+		return nil, errors.New("Core is nil")
 	}
 
 	if resource == nil {
@@ -45,8 +45,12 @@ func New(mc MainController, resource Resource, config Config) (Server, error) {
 	if config == nil {
 		return nil, errors.New("Config is nil")
 	}
-	return &webServer{mc, resource, config,
-		true, make(chan os.Signal, 3), nil, nil, nil, nil,
+	return &webServer{
+		core:           core,
+		resource:       resource,
+		config:         config,
+		useDefaultGZip: true,
+		signal:         make(chan os.Signal, 3),
 	}, nil
 }
 
@@ -54,8 +58,8 @@ func (w *webServer) requestPrinter(next oculi.HandlerFunc) oculi.HandlerFunc {
 	return func(c oculi.Context) error {
 		start := time.Now()
 		err := next(c)
-		_, errfmt := fmt.Fprint(w.resource.Logger().Output(), printerInstance.fmtRequest(c, start))
-		if errfmt != nil {
+		_, errformat := fmt.Fprint(w.resource.Logger().Output(), printerInstance.fmtRequest(c, start))
+		if errformat != nil {
 			w.resource.Logger().OError(
 				logs.NewInfo("request formatting error",
 					logs.KVs("error", err.Error()),
@@ -139,13 +143,13 @@ func (w *webServer) start() error {
 			return
 		}
 
-		genericError, ok := err.(gerr.Error)
+		genericError, ok := err.(errext.Error)
 		if !ok {
 			httpError, ok2 := err.(*echo.HTTPError)
 			if ok2 {
-				genericError = gerr.New("unknown http error", httpError.Code)(httpError.Internal, httpError.Message)
+				genericError = errext.New("unknown http error", httpError.Code)(httpError.Internal, httpError.Message)
 			} else {
-				genericError = gerr.New("unknown error", http.StatusInternalServerError)(err, nil)
+				genericError = errext.New("unknown error", http.StatusInternalServerError)(err, nil)
 			}
 		}
 
@@ -167,13 +171,13 @@ func (w *webServer) start() error {
 		}
 	}
 
-	if err := w.mainController.Init(echoEngine); err != nil {
+	if err := w.core.Init(echoEngine); err != nil {
 		w.resource.Logger().Error("error on init http rest-server")
 		return err
 	}
 
-	if w.mainController.Health() != nil {
-		echoEngine.GET("/health", w.mainController.Health())
+	if w.core.Health() != nil {
+		echoEngine.GET("/health", w.core.Health())
 	}
 	return nil
 }
@@ -197,7 +201,6 @@ func (w *webServer) stop() {
 	if err := w.resource.Engine().Shutdown(ctx); err != nil {
 		w.resource.Logger().Errorf("failed to shutdown http rest-server %s", err)
 	}
-
 	w.resource.Logger().Info("closing resource")
 	if err := w.resource.Close(); err != nil {
 		w.resource.Logger().Errorf("failed to close resource %s", err)

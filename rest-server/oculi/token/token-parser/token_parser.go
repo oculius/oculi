@@ -1,11 +1,9 @@
 package tp
 
-import (
-	gerr "github.com/oculius/oculi/v2/common/error"
-)
+import "github.com/oculius/oculi/v2/common/error-extension"
 
 type (
 	Parser interface {
-		Parse(t Token, value any) (any, gerr.Error)
+		Parse(t Token, value any) (any, errext.Error)
 	}
 )

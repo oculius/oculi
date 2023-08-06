@@ -79,7 +79,7 @@ const banner string = `
   ____           ___ 
  / __ \______ __/ (_)
 / /_/ / __/ // / / /
-\____/\__/\_,_/_/_/ %s
+\____/\__/\_,_/_/_/ %s (%d)
 Compact & intact Go web framework
 ----------------------------------
 `
@@ -88,7 +88,7 @@ func (p printer) printRoutes(ec *echo.Echo) {
 	colorizer := color.New()
 	colorizer.SetOutput(ec.Logger.Output())
 
-	fmt.Printf(banner, colorizer.Red("v"+constant.Version))
+	fmt.Printf(banner, colorizer.Red("v"+constant.Version), constant.VersionNumber)
 	routes := make(map[string][]string)
 	for _, route := range ec.Routes() {
 		routes[route.Method] = append(routes[route.Method], route.Path)

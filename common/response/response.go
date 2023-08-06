@@ -1,7 +1,7 @@
 package response
 
 import (
-	"github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/error-extension"
 )
 
 type (
@@ -18,20 +18,20 @@ type (
 		Metadata any    `json:"metadata,omitempty"`
 	}
 
-	HttpResponse interface {
+	Convertible interface {
 		ResponseCode() int
 		ResponseStatus() string
 		Detail() string
 		Metadata() any
 	}
 
-	OkHttpResponse interface {
-		HttpResponse
+	DetailConvertible interface {
+		Convertible
 		Content() any
 	}
 )
 
-func New(resp HttpResponse) Body {
+func New(resp Convertible) Body {
 	result := Body{
 		Code:   resp.ResponseCode(),
 		Status: resp.ResponseStatus(),
@@ -40,8 +40,8 @@ func New(resp HttpResponse) Body {
 			Metadata: resp.Metadata(),
 		},
 	}
-	normal, ok := resp.(OkHttpResponse)
-	err, ok2 := resp.(gerr.Error)
+	normal, ok := resp.(DetailConvertible)
+	err, ok2 := resp.(errext.Error)
 	if ok && ok2 {
 		panic("ambigous http response")
 	} else if ok {

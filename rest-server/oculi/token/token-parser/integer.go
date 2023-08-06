@@ -1,7 +1,7 @@
 package tp
 
 import (
-	gerr "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/error-extension"
 	"strconv"
 )
 
@@ -21,7 +21,7 @@ func IntParser() Parser {
 	return intParser{}
 }
 
-func (i intParser) Parse(t Token, value any) (any, gerr.Error) {
+func (i intParser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -38,7 +38,7 @@ func Int8Parser() Parser {
 	return int8Parser{}
 }
 
-func (i int8Parser) Parse(t Token, value any) (any, gerr.Error) {
+func (i int8Parser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -51,7 +51,7 @@ func Int16Parser() Parser {
 	return int16Parser{}
 }
 
-func (i int16Parser) Parse(t Token, value any) (any, gerr.Error) {
+func (i int16Parser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -64,7 +64,7 @@ func Int32Parser() Parser {
 	return int32Parser{}
 }
 
-func (i int32Parser) Parse(t Token, value any) (any, gerr.Error) {
+func (i int32Parser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -77,7 +77,7 @@ func Int64Parser() Parser {
 	return int64Parser{}
 }
 
-func (i int64Parser) Parse(t Token, value any) (any, gerr.Error) {
+func (i int64Parser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -86,7 +86,7 @@ func (i int64Parser) Parse(t Token, value any) (any, gerr.Error) {
 	return genericIntParser[int64](val, 64, t)
 }
 
-func genericIntParser[T int8 | int16 | int32 | int64](val string, bitsize int, t Token) (T, gerr.Error) {
+func genericIntParser[T int8 | int16 | int32 | int64](val string, bitsize int, t Token) (T, errext.Error) {
 	var result T
 	conVal, err := strconv.ParseInt(val, 10, bitsize)
 	if err != nil {

@@ -1,4 +1,4 @@
-package gerr
+package errext
 
 import "net/http"
 

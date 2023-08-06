@@ -1,7 +1,7 @@
 package tp
 
 import (
-	gerr "github.com/oculius/oculi/v2/common/error"
+	"github.com/oculius/oculi/v2/common/error-extension"
 	"strconv"
 )
 
@@ -15,7 +15,7 @@ func Float32Parser() Parser {
 	return float32Parser{}
 }
 
-func (i float32Parser) Parse(t Token, value any) (any, gerr.Error) {
+func (i float32Parser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -28,7 +28,7 @@ func Float64Parser() Parser {
 	return float64Parser{}
 }
 
-func (i float64Parser) Parse(t Token, value any) (any, gerr.Error) {
+func (i float64Parser) Parse(t Token, value any) (any, errext.Error) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -37,7 +37,7 @@ func (i float64Parser) Parse(t Token, value any) (any, gerr.Error) {
 	return genericFloatParser[float64](val, 64, t)
 }
 
-func genericFloatParser[T float32 | float64](val string, bitsize int, t Token) (T, gerr.Error) {
+func genericFloatParser[T float32 | float64](val string, bitsize int, t Token) (T, errext.Error) {
 	var result T
 	conVal, err := strconv.ParseFloat(val, bitsize)
 	if err != nil {

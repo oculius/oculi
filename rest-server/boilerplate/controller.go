@@ -8,42 +8,42 @@ import (
 )
 
 type (
-	mainController struct {
+	defaultCore struct {
 		rest.HealthController
-		controllers []rest.RootController
+		components []rest.Module
 	}
 
-	rootController struct {
-		path        string
-		controllers []rest.Controller
+	defaultComponent struct {
+		path    string
+		modules []rest.Component
 	}
 )
 
-func (r *rootController) Init(engine oculi.Engine) error {
+func (r *defaultComponent) Init(engine oculi.Engine) error {
 	buf := bytes.Buffer{}
 	_, _ = fmt.Fprintf(&buf, "/%s", r.path)
 	groupApi := engine.Group(buf.String())
-	for _, ctrl := range r.controllers {
-		if err := ctrl.Init(groupApi); err != nil {
+	for _, mod := range r.modules {
+		if err := mod.Init(groupApi); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func RootController(path string, controllers ...rest.Controller) rest.RootController {
-	return &rootController{path, controllers}
+func NewComponent(path string, modules ...rest.Component) rest.Module {
+	return &defaultComponent{path, modules}
 }
 
-func (m *mainController) Init(engine oculi.Engine) error {
-	for _, ctrl := range m.controllers {
-		if err := ctrl.Init(engine); err != nil {
+func (m *defaultCore) Init(engine oculi.Engine) error {
+	for _, cmp := range m.components {
+		if err := cmp.Init(engine); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func MainController(health rest.HealthController, controllers ...rest.RootController) rest.MainController {
-	return &mainController{health, controllers}
+func NewCore(health rest.HealthController, components ...rest.Module) rest.Core {
+	return &defaultCore{health, components}
 }

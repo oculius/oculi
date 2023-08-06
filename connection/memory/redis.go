@@ -5,6 +5,7 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/oculius/oculi/v2/common/encoding/json"
 	"github.com/pkg/errors"
+	"math"
 	"time"
 )
 
@@ -14,6 +15,35 @@ type (
 		parser json.Parser
 	}
 )
+
+func NewRedis(parser json.Parser, opts Options) (Memory, error) {
+	redisOpts := redis.Options(opts)
+	rdc := redis.NewClient(&redisOpts)
+	result := &memory{rdc, parser}
+	if err := rdc.Ping(context.Background()).Err(); err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
+func (m *memory) IsExists(ctx context.Context, key string) (bool, error) {
+	ttl, err := m.rdc.TTL(ctx, key).Result()
+	if err != nil {
+		return false, err
+	}
+	return ttl.Nanoseconds() >= -1, nil
+}
+
+func (m *memory) TTL(ctx context.Context, key string) (int64, error) {
+	ttl, err := m.rdc.TTL(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+	if ttl.Nanoseconds() <= 0 {
+		return ttl.Nanoseconds(), nil
+	}
+	return int64(math.Round(ttl.Seconds())), nil
+}
 
 func (m *memory) Ping(ctx context.Context) error {
 	return m.rdc.Ping(ctx).Err()
@@ -106,16 +136,6 @@ func (m *memory) Set(ctx context.Context, key string, data any, ttl time.Duratio
 		return err
 	}
 	return nil
-}
-
-func NewRedis(parser json.Parser, opts Options) (Memory, error) {
-	redisOpts := redis.Options(opts)
-	rdc := redis.NewClient(&redisOpts)
-	result := &memory{rdc, parser}
-	if err := rdc.Ping(context.Background()).Err(); err != nil {
-		return result, err
-	}
-	return result, nil
 }
 
 func (m *memory) Client() *redis.Client {

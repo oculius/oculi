@@ -1,4 +1,4 @@
-package gerr
+package errext
 
 import (
 	"github.com/pkg/errors"
