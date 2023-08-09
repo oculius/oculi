@@ -9,10 +9,12 @@ import (
 type (
 	function struct {
 		item        any
-		resultTag   []string
-		paramTag    []string
+		resultTag   Tag
+		paramTag    Tag
 		asInterface []any
 	}
+
+	Tag []string
 )
 
 // P stands for Provider
@@ -24,11 +26,11 @@ func P(fn any) fx.Option {
 // I stands for Invoker
 func I(fn any) fx.Option {
 	f := &function{fn, nil, nil, nil}
-	return f.validate().Invoke()
+	return f.validate().invoke()
 }
 
 // TP stands for Tagged Provider
-func TP(fn any, paramTag []string, resultTag []string, asInterface ...interface{}) fx.Option {
+func TP(fn any, paramTag Tag, resultTag Tag, asInterface ...interface{}) fx.Option {
 	f := &function{fn, resultTag, paramTag, asInterface}
 	return f.validate().Build()
 }
@@ -36,19 +38,19 @@ func TP(fn any, paramTag []string, resultTag []string, asInterface ...interface{
 // D stands for Decorator
 func D(fn any) fx.Option {
 	f := &function{fn, nil, nil, nil}
-	return f.validate().Decorate()
+	return f.validate().decorate()
 }
 
 // S stands for Supplier
 func S(item any) fx.Option {
 	f := &function{item, nil, nil, nil}
-	return f.validate().Supply()
+	return f.validate().supply()
 }
 
 // TS stands for Tagged Supplier
-func TS(item any, resultTag []string, asInterface ...interface{}) fx.Option {
+func TS(item any, resultTag Tag, asInterface ...interface{}) fx.Option {
 	f := &function{item, resultTag, nil, asInterface}
-	return f.validate().Supply()
+	return f.validate().supply()
 }
 
 func (f *function) Build() fx.Option {
@@ -65,13 +67,13 @@ func (f *function) Build() fx.Option {
 	)
 }
 
-func (f *function) Decorate() fx.Option {
+func (f *function) decorate() fx.Option {
 	return fx.Decorate(
 		f.item,
 	)
 }
 
-func (f *function) Invoke() fx.Option {
+func (f *function) invoke() fx.Option {
 	return fx.Invoke(
 		f.item,
 	)
@@ -113,7 +115,7 @@ func (f *function) validate() *function {
 	return f
 }
 
-func (f *function) Supply() fx.Option {
+func (f *function) supply() fx.Option {
 	ann := f.getAnnotations()
 	if len(ann) == 0 {
 		return fx.Supply(f.item)

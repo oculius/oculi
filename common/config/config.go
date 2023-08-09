@@ -38,7 +38,7 @@ func NewYaml(object any, filename string) error {
 	return nil
 }
 
-func New(object interface{}) error {
+func NewEnv(object interface{}) error {
 	useFileEnv := parseBool(os.Getenv("USE_CONFIG_FILE"), true)
 	filename := os.Getenv("CONFIG_FILE")
 
@@ -47,8 +47,8 @@ func New(object interface{}) error {
 	}
 
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		if err := envconfig.Process("", object); err != nil {
-			return errors.Wrap(err, "failed to read from env variable")
+		if err2 := envconfig.Process("", object); err2 != nil {
+			return errors.Wrap(err2, "failed to read from env variable")
 		}
 		return nil
 	}

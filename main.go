@@ -2,37 +2,41 @@ package main
 
 import (
 	"fmt"
-	di "github.com/oculius/oculi/v2/common/dependency-injection"
-	bp_di "github.com/oculius/oculi/v2/common/dependency-injection/boilerplate"
+	"github.com/oculius/oculi/v2/common/dependency-injection"
 	"github.com/oculius/oculi/v2/common/logs"
-	ozap "github.com/oculius/oculi/v2/common/logs/zap"
 	"github.com/oculius/oculi/v2/common/response"
 	"github.com/oculius/oculi/v2/rest-server"
 	"github.com/oculius/oculi/v2/rest-server/boilerplate"
 	"github.com/oculius/oculi/v2/rest-server/oculi"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"reflect"
-	"sync"
 	"time"
 )
 
 type (
 	Resource struct {
-		rest.Resource
-		fx.In
+		rest.CoreResource
 	}
 
-	Config struct{}
+	Config struct {
+		ServerName string
+		ServerPort int
+	}
 
 	HealthController struct{}
 
 	C1 struct{}
-	C2 struct{}
+	C2 struct {
+		res Resource
+	}
 )
 
 var running = int64(0)
 var count = 0
+
+func NewC2(X string, r Resource, c Config) rest.Module {
+	return C2{r}
+}
 
 func (c C2) Init(route oculi.RouteGroup) error {
 	apigroup := route.RGroup("/c2")
@@ -89,9 +93,9 @@ func (c C1) Init(route oculi.RouteGroup) error {
 }
 
 var (
-	_ rest.HealthController = HealthController{}
-	_ rest.Component        = C1{}
-	_ rest.Component        = C2{}
+	_ rest.HealthModule = HealthController{}
+	_ rest.Module       = C1{}
+	_ rest.Module       = C2{}
 )
 
 func (c Config) ServerGracefullyDuration() time.Duration {
@@ -105,8 +109,10 @@ func (c Config) IsDevelopmentMode() bool {
 func (c HealthController) Health() oculi.HandlerFunc {
 	return nil
 }
-func NewResource(l logs.Logger) rest.Resource {
-	return bp_rest.Resource("123", 5555, l)
+func NewResource(l logs.Logger, c Config) Resource {
+	res := bp_rest.Resource(c.ServerName, c.ServerPort, l)
+	result := Resource{res}
+	return result
 }
 
 type A struct {
@@ -155,28 +161,26 @@ func main() {
 	//fmt.Println(m.Get(ctx, "gugs", &f))
 	//fmt.Println(i, f)
 
-	var wg sync.WaitGroup
 	time.Local, _ = time.LoadLocation("UTC")
-	wg.Add(1)
-	di.Register(
-		bp_di.RestServer(),
-		bp_di.APIVersion(1),
-		fx.NopLogger,
-		di.S(&wg),
-		di.TS(Config{}, nil, nil, new(rest.Config)),
-		di.TS(zap.AddCallerSkip(1), []string{`group:"log_opts"`}, new(zap.Option)),
-		di.TP(ozap.NewProduction, []string{`group:"log_opts"`}, nil, nil),
-		di.TS(C1{}, []string{`group:"v1_modules"`}, new(rest.Component)),
-		di.TS(C2{}, []string{`group:"v1_modules"`}, new(rest.Component)),
-		di.TS(HealthController{}, nil, new(rest.HealthController)),
+	di.Compose(
+		di.RestServer[rest.Core, Config, Resource](),
+		di.APIVersion(1),
+		di.APIVersion(2),
+		di.S(Config{"ASD", 5612}),
+		di.TS(zap.AddCallerSkip(1), di.Tag{`group:"log_opts"`}, new(zap.Option)),
+		di.TP(logs.NewZapProduction, di.Tag{`group:"log_opts"`}, nil, nil),
+		di.ComponentSupplier("v1", C1{}),
+		di.TS("asd", di.Tag{`s_name:"taga"`}),
+		di.TS("def", di.Tag{`name:"tag2"`}),
+		di.ComponentProvider("v2", NewC2, di.Tag{`s_name:"taga"`}),
+		//di.ComponentProvider("v1", func() (error, int, rest.Module) { return nil, 0, nil }, nil),
+		//di.TP(NewC2, nil, di.Tag{`group:"v1_modules"`}),
+		di.TS(HealthController{}, nil, new(rest.HealthModule)),
 		di.P(NewResource),
-		fx.StartTimeout(time.Second*3),
 	)
-	deps := di.Dependencies()
-	app := fx.New(deps...)
-
+	di.NoDependencyInjectionTracer()
+	app := di.Build()
 	app.Run()
-	wg.Wait()
 	//var wg sync.WaitGroup
 	//wg.Add(3)
 	//for i := 0; i < 3; i++ {
@@ -186,5 +190,4 @@ func main() {
 	//		fmt.Printf("t%d done\n", x)
 	//	}(i)
 	//}
-	wg.Wait()
 }

@@ -9,13 +9,13 @@ import (
 
 type (
 	defaultCore struct {
-		rest.HealthController
-		components []rest.Module
+		rest.HealthModule
+		components []rest.Component
 	}
 
 	defaultComponent struct {
 		path    string
-		modules []rest.Component
+		modules []rest.Module
 	}
 )
 
@@ -31,7 +31,7 @@ func (r *defaultComponent) Init(engine oculi.Engine) error {
 	return nil
 }
 
-func NewComponent(path string, modules ...rest.Component) rest.Module {
+func NewComponent(path string, modules ...rest.Module) rest.Component {
 	return &defaultComponent{path, modules}
 }
 
@@ -44,6 +44,6 @@ func (m *defaultCore) Init(engine oculi.Engine) error {
 	return nil
 }
 
-func NewCore(health rest.HealthController, components ...rest.Module) rest.Core {
+func NewCore(health rest.HealthModule, components ...rest.Component) rest.Core {
 	return &defaultCore{health, components}
 }

@@ -1,8 +1,11 @@
 package di
 
 import (
+	"fmt"
 	"go.uber.org/fx"
 	"reflect"
+	"sync"
+	"time"
 )
 
 type (
@@ -12,6 +15,11 @@ type (
 
 	Component interface {
 		Child()
+	}
+
+	App struct {
+		FxApp     *fx.App
+		WaitGroup *sync.WaitGroup
 	}
 )
 
@@ -48,10 +56,10 @@ func parse(item any, options *[]fx.Option) {
 	*options = append(*options, P(item))
 }
 
-func Register(items ...any) {
+func Compose(items ...any) {
 	var opts []fx.Option
 
-	i := Instance()
+	i := newInstance()
 
 	for _, each := range items {
 		parse(each, &opts)
@@ -62,6 +70,47 @@ func Register(items ...any) {
 	}
 }
 
-func Dependencies() []fx.Option {
-	return Instance().Build()
+var (
+	isStartUpTimeoutSet = false
+)
+
+func Build() *App {
+	var wg sync.WaitGroup
+
+	buildTime := time.Now()
+
+	if !isStartUpTimeoutSet {
+		StartupTimeout(3 * time.Second)
+	}
+
+	deps := newInstance().Build()
+	deps = append(deps, S(&wg))
+	fmt.Printf("Took %s to build and prepare the application...\n", time.Now().Sub(buildTime).String())
+
+	runTime := time.Now()
+	defer func() {
+		fmt.Printf("Took %s to run the application...\n", time.Now().Sub(runTime).String())
+	}()
+	return &App{fx.New(deps...), &wg}
+}
+
+func NoDependencyInjectionTracer() {
+	i := newInstance()
+	i.Add([]fx.Option{fx.NopLogger})
+}
+
+func StartupTimeout(v time.Duration) {
+	i := newInstance()
+	i.Add([]fx.Option{fx.StartTimeout(v)})
+	isStartUpTimeoutSet = true
+}
+
+func StopTimeout(v time.Duration) {
+	i := newInstance()
+	i.Add([]fx.Option{fx.StopTimeout(v)})
+}
+
+func (a *App) Run() {
+	a.FxApp.Run()
+	a.WaitGroup.Wait()
 }

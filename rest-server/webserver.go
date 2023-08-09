@@ -21,7 +21,7 @@ import (
 type (
 	webServer struct {
 		core           Core
-		resource       Resource
+		resource       CoreResource
 		config         Config
 		useDefaultGZip bool
 		signal         chan os.Signal
@@ -33,7 +33,7 @@ type (
 	}
 )
 
-func New(core Core, resource Resource, config Config) (Server, error) {
+func New(core Core, resource CoreResource, config Config) (Server, error) {
 	if core == nil {
 		return nil, errors.New("Core is nil")
 	}
@@ -97,7 +97,7 @@ func (w *webServer) Run() error {
 		return err
 	}
 
-	w.resource.Logger().Info("http rest-server started")
+	w.resource.Logger().Infof("http rest-server started, name: %s", w.resource.ServiceName())
 	<-w.signal
 
 	if err := w.apply(w.beforeExit); err != nil {

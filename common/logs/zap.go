@@ -1,8 +1,7 @@
-package ozap
+package logs
 
 import (
 	"github.com/labstack/gommon/log"
-	"github.com/oculius/oculi/v2/common/logs"
 	"go.uber.org/zap"
 	"io"
 	"os"
@@ -25,9 +24,9 @@ type (
 	}
 )
 
-var _ logs.Logger = &zapLogger{}
+var _ Logger = &zapLogger{}
 
-func New(logOption LoggerOption, options ...zap.Option) (logs.Logger, error) {
+func NewZap(logOption LoggerOption, options ...zap.Option) (Logger, error) {
 	var (
 		instance *zap.Logger
 		err      error
@@ -50,14 +49,14 @@ func New(logOption LoggerOption, options ...zap.Option) (logs.Logger, error) {
 	}, nil
 }
 
-// NewDevelopment is a method for constructing new Zap Logger for development env
-func NewDevelopment(options ...zap.Option) (logs.Logger, error) {
-	return New(LoggerOption{true, log.DEBUG, "", os.Stdout}, options...)
+// NewZapDevelopment is a method for constructing new Zap Logger for development env
+func NewZapDevelopment(options ...zap.Option) (Logger, error) {
+	return NewZap(LoggerOption{true, log.DEBUG, "", os.Stdout}, options...)
 }
 
-// NewProduction is a method for constructing new Zap Logger for production env
-func NewProduction(options ...zap.Option) (logs.Logger, error) {
-	return New(LoggerOption{false, log.INFO, "", os.Stdout}, options...)
+// NewZapProduction is a method for constructing new Zap Logger for production env
+func NewZapProduction(options ...zap.Option) (Logger, error) {
+	return NewZap(LoggerOption{false, log.INFO, "", os.Stdout}, options...)
 }
 
 func (z *zapLogger) Output() io.Writer {
@@ -263,11 +262,11 @@ func (z *zapLogger) Instance() interface{} {
 	return z.instance
 }
 
-func (z *zapLogger) setupBaseLogger(info logs.Info) *zap.SugaredLogger {
+func (z *zapLogger) setupBaseLogger(info Info) *zap.SugaredLogger {
 	return z.instance.With("metadata", info.Metadata(), "timestamp", time.Now().UTC().Format(time.RFC3339Nano))
 }
 
-func (z *zapLogger) OPrint(info logs.Info) {
+func (z *zapLogger) OPrint(info Info) {
 	if !z.isLogginOn() {
 		return
 	}
@@ -275,7 +274,7 @@ func (z *zapLogger) OPrint(info logs.Info) {
 	z.setupBaseLogger(info).Info(info.Message())
 }
 
-func (z *zapLogger) ODebug(info logs.Info) {
+func (z *zapLogger) ODebug(info Info) {
 	if !z.isLogginOn() {
 		return
 	}
@@ -283,7 +282,7 @@ func (z *zapLogger) ODebug(info logs.Info) {
 	z.setupBaseLogger(info).Debug(info.Message())
 }
 
-func (z *zapLogger) OInfo(info logs.Info) {
+func (z *zapLogger) OInfo(info Info) {
 	if !z.isLogginOn() {
 		return
 	}
@@ -291,7 +290,7 @@ func (z *zapLogger) OInfo(info logs.Info) {
 	z.setupBaseLogger(info).Info(info.Message())
 }
 
-func (z *zapLogger) OWarn(info logs.Info) {
+func (z *zapLogger) OWarn(info Info) {
 	if !z.isLogginOn() {
 		return
 	}
@@ -299,7 +298,7 @@ func (z *zapLogger) OWarn(info logs.Info) {
 	z.setupBaseLogger(info).Warn(info.Message())
 }
 
-func (z *zapLogger) OError(info logs.Info) {
+func (z *zapLogger) OError(info Info) {
 	if !z.isLogginOn() {
 		return
 	}
@@ -307,7 +306,7 @@ func (z *zapLogger) OError(info logs.Info) {
 	z.setupBaseLogger(info).Error(info.Message())
 }
 
-func (z *zapLogger) OFatal(info logs.Info) {
+func (z *zapLogger) OFatal(info Info) {
 	if !z.isLogginOn() {
 		return
 	}
@@ -315,7 +314,7 @@ func (z *zapLogger) OFatal(info logs.Info) {
 	z.setupBaseLogger(info).Fatal(info.Message())
 }
 
-func (z *zapLogger) OPanic(info logs.Info) {
+func (z *zapLogger) OPanic(info Info) {
 	if !z.isLogginOn() {
 		return
 	}

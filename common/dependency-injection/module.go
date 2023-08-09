@@ -15,10 +15,10 @@ func M(name string, fn ...any) fx.Option {
 		parse(each, &opts)
 	}
 	m := module{opts, name}
-	return m.Build()
+	return m.build()
 }
 
-func (m *module) Build() fx.Option {
+func (m *module) build() fx.Option {
 	X := len(m.child)
 	result := make([]fx.Option, X)
 	i := 0

@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func Resource(serverName string, serverPort int, l logs.Logger) rest.Resource {
+func Resource(serverName string, serverPort int, l logs.Logger) rest.CoreResource {
 	e := oculi.New()
 	return &resource{
 		serverName, serverPort, l, e, time.Now(),

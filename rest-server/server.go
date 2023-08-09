@@ -20,7 +20,7 @@ type (
 		AfterExit(HookFunction) Server
 	}
 
-	Resource interface {
+	CoreResource interface {
 		Engine() oculi.Engine
 		ServiceName() string
 		ServerPort() int
@@ -30,7 +30,7 @@ type (
 		Close() error
 	}
 
-	HealthController interface {
+	HealthModule interface {
 		Health() oculi.HandlerFunc
 	}
 
@@ -39,12 +39,12 @@ type (
 	}
 
 	Core interface {
-		HealthController
-		Module
+		HealthModule
+		Initiable[oculi.Engine]
 	}
 
-	Module    Initiable[oculi.Engine]
-	Component Initiable[oculi.RouteGroup]
+	Component Initiable[oculi.Engine]
+	Module    Initiable[oculi.RouteGroup]
 
 	//Component interface {
 	//	Init(route oculi.RouteGroup) error
@@ -55,7 +55,7 @@ type (
 		IsDevelopmentMode() bool
 	}
 
-	HookFunction func(res Resource) error
+	HookFunction func(res CoreResource) error
 
 	Option interface {
 		Apply(w *webServer)
