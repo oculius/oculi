@@ -8,7 +8,6 @@ import (
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/common/response"
 	"github.com/oculius/oculi/v2/rest-server"
-	"github.com/oculius/oculi/v2/rest-server/boilerplate"
 	"github.com/oculius/oculi/v2/rest-server/oculi"
 	"go.uber.org/zap"
 	"reflect"
@@ -17,7 +16,7 @@ import (
 
 type (
 	Resource struct {
-		rest.CoreResource
+		rest.IResource
 	}
 
 	Config struct {
@@ -115,7 +114,7 @@ func (c HealthController) Health() oculi.HandlerFunc {
 	return nil
 }
 func NewResource(l logs.Logger, c Config) Resource {
-	res := bp_rest.Resource(c.ServerName, c.ServerPort, l)
+	res := rest.Resource(c.ServerName, c.ServerPort, l)
 	result := Resource{res}
 	return result
 }

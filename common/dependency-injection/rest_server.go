@@ -3,7 +3,6 @@ package di
 import (
 	"fmt"
 	"github.com/oculius/oculi/v2/rest-server"
-	"github.com/oculius/oculi/v2/rest-server/boilerplate"
 	"go.uber.org/fx"
 	"reflect"
 	"sync"
@@ -27,7 +26,7 @@ func (sh *singleHolder) Dependencies() []fx.Option {
 	return []fx.Option{sh.opt}
 }
 
-func newRestServer[X rest.Core, Y rest.Config, Z rest.CoreResource](core X, c Y, res Z, lc fx.Lifecycle, wg *sync.WaitGroup) (rest.Server, error) {
+func newRestServer[X rest.Core, Y rest.Config, Z rest.IResource](core X, c Y, res Z, lc fx.Lifecycle, wg *sync.WaitGroup) (rest.Server, error) {
 	srv, err := rest.New(core, res, c)
 	if err != nil {
 		return nil, err
@@ -37,12 +36,12 @@ func newRestServer[X rest.Core, Y rest.Config, Z rest.CoreResource](core X, c Y,
 }
 
 // Register Rest Server Provider & Invoker
-// Required Dependencies: rest.HealthModule, rest.Config, rest.CoreResource, *sync.WaitGroup, rest.Module
-func RestServer[X rest.Core, Y rest.Config, Z rest.CoreResource]() IndirectDependency {
+// Required Dependencies: rest.HealthModule, rest.Config, rest.IResource, *sync.WaitGroup, rest.Module
+func RestServer[X rest.Core, Y rest.Config, Z rest.IResource]() IndirectDependency {
 	opts := []fx.Option{
 		P(newRestServer[X, Y, Z]),
 		I(func(srv rest.Server) {}),
-		TP(bp_rest.NewCore,
+		TP(rest.NewCore,
 			[]string{
 				`optional:"false"`,
 				`group:"components"`,
@@ -59,7 +58,7 @@ func NewComponent(name string) IndirectDependency {
 			TS(fmt.Sprintf("%s", name), Tag{fmt.Sprintf(`name:"%s"`, name)}),
 
 			// Create API Version
-			TP(bp_rest.NewComponent,
+			TP(rest.NewComponent,
 				[]string{
 					fmt.Sprintf(`name:"%s"`, name),
 					fmt.Sprintf(`group:"%s_modules"`, name),

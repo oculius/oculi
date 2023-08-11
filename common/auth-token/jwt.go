@@ -3,6 +3,7 @@ package authtoken
 import (
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
+	errext "github.com/oculius/oculi/v2/common/error-extension"
 	"time"
 )
 
@@ -37,7 +38,7 @@ func (c *Claims[T]) SetTime(time time.Time) {
 
 var _ ClaimContract = &Claims[struct{}]{}
 
-func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, error) {
+func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, errext.Error) {
 	now := time.Now()
 	claim.SetExpires(now.Add(exp))
 	claim.SetTime(now)
@@ -46,12 +47,12 @@ func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, error) {
 
 	signedToken, err := newToken.SignedString(j.key)
 	if err != nil {
-		return "", err
+		return "", ErrFailedToSign(err, nil)
 	}
 	return signedToken, nil
 }
 
-func (j *jwtEngine[T]) Decode(tokenString string) (T, error) {
+func (j *jwtEngine[T]) Decode(tokenString string) (T, errext.Error) {
 	var emptyclaim T
 	token, err := j.getToken(tokenString, j.contract)
 	if err != nil {

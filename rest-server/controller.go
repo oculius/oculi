@@ -1,21 +1,20 @@
-package bp_rest
+package rest
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/oculius/oculi/v2/rest-server"
 	"github.com/oculius/oculi/v2/rest-server/oculi"
 )
 
 type (
 	defaultCore struct {
-		rest.HealthModule
-		components []rest.Component
+		HealthModule
+		components []Component
 	}
 
 	defaultComponent struct {
 		path    string
-		modules []rest.Module
+		modules []Module
 	}
 )
 
@@ -31,7 +30,7 @@ func (r *defaultComponent) Init(engine oculi.Engine) error {
 	return nil
 }
 
-func NewComponent(path string, modules ...rest.Module) rest.Component {
+func NewComponent(path string, modules ...Module) Component {
 	return &defaultComponent{path, modules}
 }
 
@@ -44,6 +43,6 @@ func (m *defaultCore) Init(engine oculi.Engine) error {
 	return nil
 }
 
-func NewCore(health rest.HealthModule, components ...rest.Component) rest.Core {
+func NewCore(health HealthModule, components ...Component) Core {
 	return &defaultCore{health, components}
 }

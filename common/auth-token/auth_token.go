@@ -9,8 +9,8 @@ import (
 
 type (
 	Engine[T ClaimContract] interface {
-		Encode(claim T, exp time.Duration) (string, error)
-		Decode(token string) (T, error)
+		Encode(claim T, exp time.Duration) (string, errext.Error)
+		Decode(token string) (T, errext.Error)
 		Validate(token string) bool
 		Contract() ClaimContract
 	}
@@ -24,6 +24,7 @@ type (
 
 var (
 	ErrInvalidToken = errext.New("invalid token", http.StatusUnauthorized)
+	ErrFailedToSign = errext.New("failed to sign", http.StatusInternalServerError)
 
 	HS256 = Algorithm(jwt.SigningMethodHS256.Name)
 	HS384 = Algorithm(jwt.SigningMethodHS384.Name)

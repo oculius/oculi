@@ -20,7 +20,7 @@ type (
 		AfterExit(HookFunction) Server
 	}
 
-	CoreResource interface {
+	IResource interface {
 		Engine() oculi.Engine
 		ServiceName() string
 		ServerPort() int
@@ -55,7 +55,7 @@ type (
 		IsDevelopmentMode() bool
 	}
 
-	HookFunction func(res CoreResource) error
+	HookFunction func(res IResource) error
 
 	Option interface {
 		Apply(w *webServer)

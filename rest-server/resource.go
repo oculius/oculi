@@ -1,8 +1,7 @@
-package bp_rest
+package rest
 
 import (
 	"github.com/oculius/oculi/v2/common/logs"
-	"github.com/oculius/oculi/v2/rest-server"
 	"github.com/oculius/oculi/v2/rest-server/oculi"
 	"github.com/pkg/errors"
 	"strings"
@@ -19,7 +18,7 @@ type (
 	}
 )
 
-func Resource(serverName string, serverPort int, l logs.Logger) rest.CoreResource {
+func Resource(serverName string, serverPort int, l logs.Logger) IResource {
 	e := oculi.New()
 	return &resource{
 		serverName, serverPort, l, e, time.Now(),

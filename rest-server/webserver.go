@@ -21,7 +21,7 @@ import (
 type (
 	webServer struct {
 		core           Core
-		resource       CoreResource
+		resource       IResource
 		config         Config
 		useDefaultGZip bool
 		signal         chan os.Signal
@@ -33,7 +33,7 @@ type (
 	}
 )
 
-func New(core Core, resource CoreResource, config Config) (Server, error) {
+func New(core Core, resource IResource, config Config) (Server, error) {
 	if core == nil {
 		return nil, errors.New("Core is nil")
 	}
