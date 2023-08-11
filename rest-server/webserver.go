@@ -58,7 +58,7 @@ func (w *webServer) requestPrinter(next oculi.HandlerFunc) oculi.HandlerFunc {
 	return func(c oculi.Context) error {
 		start := time.Now()
 		err := next(c)
-		_, errformat := fmt.Fprint(w.resource.Logger().Output(), printerInstance.fmtRequest(c, start))
+		_, errformat := fmt.Fprint(w.resource.Logger().Output(), printerInstance.fmtRequest(c, start, err))
 		if errformat != nil {
 			w.resource.Logger().OError(
 				logs.NewInfo("request formatting error",

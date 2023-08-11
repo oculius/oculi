@@ -56,9 +56,12 @@ func (p printer) statusCodeColor(code int) string {
 	}
 }
 
-func (p printer) fmtRequest(ec echo.Context, start time.Time) string {
+func (p printer) fmtRequest(ec echo.Context, start time.Time, err error) string {
 	now := time.Now()
 	statusCode := ec.Response().Status
+	if err != nil && statusCode == http.StatusOK {
+		statusCode = http.StatusInternalServerError
+	}
 	method := ec.Request().Method
 	latency := now.Sub(start)
 	path := ec.Path()

@@ -12,11 +12,11 @@ import (
 type (
 	memory struct {
 		rdc    *redis.Client
-		parser json.Parser
+		parser json.JSON
 	}
 )
 
-func NewRedis(parser json.Parser, opts Options) (Memory, error) {
+func NewRedis(parser json.JSON, opts Options) (Memory, error) {
 	redisOpts := redis.Options(opts)
 	rdc := redis.NewClient(&redisOpts)
 	result := &memory{rdc, parser}

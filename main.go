@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	authtoken "github.com/oculius/oculi/v2/common/auth-token"
 	"github.com/oculius/oculi/v2/common/dependency-injection"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/common/response"
@@ -56,6 +58,9 @@ func (c C2) Init(route oculi.RouteGroup) error {
 	apigroup.RGroup("/baba").Bundle("", func(group oculi.RouteGroup) {
 		group.POST("", func(ctx oculi.Context) error {
 			return nil
+		})
+		group.GET("", func(ctx oculi.Context) error {
+			return errors.New("123")
 		})
 		group.TRACE("", func(ctx oculi.Context) error {
 			return nil
@@ -161,7 +166,7 @@ func main() {
 	//fmt.Println(m.Get(ctx, "gugs", &f))
 	//fmt.Println(i, f)
 
-	time.Local, _ = time.LoadLocation("UTC")
+	time.Local, _ = time.LoadLocation("Asia/Jakarta")
 	di.Compose(
 		di.RestServer[rest.Core, Config, Resource](),
 		di.APIVersion(1),
@@ -178,9 +183,15 @@ func main() {
 		di.TS(HealthController{}, nil, new(rest.HealthModule)),
 		di.P(NewResource),
 	)
-	di.NoDependencyInjectionTracer()
-	app := di.Build()
-	app.Run()
+	//di.NoDependencyInjectionTracer()
+	//app := di.Build()
+	//app.Run()
+
+	jwtEngine := authtoken.NewJWT[int]("baba123", authtoken.HS512)
+	fmt.Println(jwtEngine.Encode(&authtoken.Claims[int]{Data: 123}, time.Second*10))
+	token := "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTE3NDU1NDksIm5iZiI6MTY5MTc0NTUzOSwiaWF0IjoxNjkxNzQ1NTM5LCJkYXRhIjoxMjMsImlkZW50aWZpZXIiOiIifQ.-TXu9NJfB-x8ukKzX7hN7brFlgALwWneW5yuQ1Nz1nLaxcIbnYRmRMkyNRZ9IB9pBuTS_ZuMPW8BsEnJKWspdw"
+	fmt.Println(jwtEngine.Decode(token))
+	fmt.Println(jwtEngine.Validate(token))
 	//var wg sync.WaitGroup
 	//wg.Add(3)
 	//for i := 0; i < 3; i++ {

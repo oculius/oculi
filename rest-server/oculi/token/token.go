@@ -23,6 +23,7 @@ type (
 
 	Token interface {
 		rawvalue() any
+
 		Key() string
 		IsRequired() bool
 		Source() TokenSource
