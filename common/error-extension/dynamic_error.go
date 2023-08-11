@@ -27,10 +27,10 @@ type (
 func NewConditional(id string, formatter FormatFunc, conditionalHttpStatus HttpStatusMapFunc) ErrorSeed {
 	return (&dynamicErrorSeed{
 		id, formatter, conditionalHttpStatus,
-	}).Build
+	}).build
 }
 
-func (d dynamicErrorSeed) Build(source error, metadata any, args ...interface{}) Error {
+func (d dynamicErrorSeed) build(source error, metadata any, args ...interface{}) Error {
 	if d.detail == nil || d.httpStatus == nil {
 		panic("seed formatter or conditional http status is nil")
 	}

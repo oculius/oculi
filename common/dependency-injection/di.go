@@ -2,6 +2,7 @@ package di
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"go.uber.org/fx"
 	"reflect"
 	"sync"
@@ -21,7 +22,15 @@ type (
 		FxApp     *fx.App
 		WaitGroup *sync.WaitGroup
 	}
+
+	diErrorLogger struct{}
 )
+
+func (d diErrorLogger) HandleError(err error) {
+	fmt.Printf("%+v\n", errors.WithStack(err))
+}
+
+var _ fx.ErrorHandler = diErrorLogger{}
 
 func parse(item any, options *[]fx.Option) {
 	callableComponent, ok := item.(Component)
@@ -96,7 +105,10 @@ func Build() *App {
 
 func NoDependencyInjectionTracer() {
 	i := newInstance()
-	i.Add([]fx.Option{fx.NopLogger})
+	i.Add([]fx.Option{
+		fx.NopLogger,
+		fx.ErrorHook(diErrorLogger{}),
+	})
 }
 
 func StartupTimeout(v time.Duration) {

@@ -22,10 +22,10 @@ func (i *impl) Unmarshal(data []byte, val interface{}) error {
 	return i.json.Unmarshal(data, val)
 }
 
-func New() Parser {
+func New() JSON {
 	once.Do(func() {
 		if instance != nil {
-			panic("jsoniter: singleton instance error")
+			panic("json: singleton instance error")
 		}
 		instance = &impl{
 			json: jsoniter.ConfigCompatibleWithStandardLibrary,

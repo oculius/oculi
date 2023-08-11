@@ -1,19 +1,14 @@
 package json
 
 import (
-	"github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/oculius/oculi/v2/common/encoding"
 	"sync"
 )
 
-type (
-	Parser interface {
-		Marshal(val interface{}) ([]byte, error)
-		Unmarshal(data []byte, val interface{}) error
-		API() jsoniter.API
-	}
-)
+type JSON encoding.Encoder[jsoniter.API]
 
 var (
-	instance Parser
+	instance JSON
 	once     sync.Once
 )

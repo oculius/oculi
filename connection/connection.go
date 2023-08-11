@@ -1,6 +1,8 @@
 package connection
 
-import "context"
+import (
+	"context"
+)
 
 type (
 	Connection interface {
