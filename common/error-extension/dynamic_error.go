@@ -58,7 +58,7 @@ func (d *dynamicError) ResponseStatus() string {
 	return http.StatusText(d.httpStatus)
 }
 
-func (d *dynamicError) Equal(err Error) bool {
+func (d *dynamicError) Equal(err error) bool {
 	casted, ok := err.(*dynamicError)
 	if !ok {
 		return false

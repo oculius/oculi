@@ -48,13 +48,13 @@ func (s *staticError) ResponseStatus() string {
 	return http.StatusText(s.httpStatus)
 }
 
-func (s *staticError) Equal(err Error) bool {
-	_, ok := err.(*staticError)
+func (s *staticError) Equal(err error) bool {
+	errcast, ok := err.(*staticError)
 	if !ok {
 		return false
 	}
-	return s.httpStatus == err.ResponseCode() && s.source.Error() == err.Error() &&
-		s.detail == err.Detail()
+	return s.httpStatus == errcast.ResponseCode() && s.source.Error() == errcast.Error() &&
+		s.detail == errcast.Detail()
 }
 
 func (s *staticError) Metadata() any {

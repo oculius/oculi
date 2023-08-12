@@ -22,7 +22,7 @@ func (i *impl) Unmarshal(data []byte, val interface{}) error {
 	return i.json.Unmarshal(data, val)
 }
 
-func New() JSON {
+func Instance() JSON {
 	once.Do(func() {
 		if instance != nil {
 			panic("json: singleton instance error")

@@ -3,7 +3,7 @@ package authtoken
 import (
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
-	errext "github.com/oculius/oculi/v2/common/error-extension"
+	"github.com/oculius/oculi/v2/common/error-extension"
 	"time"
 )
 

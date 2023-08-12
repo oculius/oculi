@@ -59,7 +59,7 @@ func (v *validatorError) ResponseStatus() string {
 	return http.StatusText(ValidatorErrorHttpStatus)
 }
 
-func (v *validatorError) Equal(err Error) bool {
+func (v *validatorError) Equal(err error) bool {
 	casted, ok := err.(*validatorError)
 	if !ok {
 		return false

@@ -7,7 +7,7 @@ type (
 		error
 		ResponseCode() int
 		ResponseStatus() string
-		Equal(err Error) bool
+		Equal(err error) bool
 		Metadata() any
 		Source() error
 		Detail() string
