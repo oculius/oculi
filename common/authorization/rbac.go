@@ -15,6 +15,11 @@ type (
 		ListRolesForUser(user string) (Roles, error)
 		ListPermissionsForUser(user string) Permissions
 
+		ValidateResource(resource string) error
+		ValidateAction(action string) error
+		Validate(resource, action string) error
+		BulkValidate(permissions Permissions) error
+
 		IsUserIn(user, role string) (bool, error)
 		HasRolePermission(role, resource, action string) bool
 		HasUserPermission(user, resource, action string) bool
@@ -79,5 +84,7 @@ type (
 
 var (
 	ErrAuthorizationService = errext.New("authorization service error", http.StatusInternalServerError)
+	ErrInvalidResourceName  = errext.New("invalid resource name", http.StatusBadRequest)
+	ErrInvalidActionName    = errext.New("invalid action name", http.StatusBadRequest)
 	ErrForbidden            = errext.New("no permission", http.StatusForbidden)
 )

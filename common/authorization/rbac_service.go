@@ -5,16 +5,23 @@ import (
 	"github.com/casbin/gorm-adapter/v3"
 	"github.com/oculius/oculi/v2/common/error-extension"
 	"gorm.io/gorm"
+	"sort"
 	"strings"
 )
 
 type (
 	rbacService struct {
 		enforcer Enforcer
+
+		resourceList []string
+		resourceN    int
+
+		actionList []string
+		actionN    int
 	}
 )
 
-func NewRBACService(db *gorm.DB) RBAC {
+func NewRBACService(db *gorm.DB, resourceList, actionList []string) RBAC {
 	model :=
 		`
 [request_definition]
@@ -32,8 +39,14 @@ e = some(where (p.eft == allow))
 [matchers]
 m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act || r.sub == "root"
 `
+	sort.Strings(resourceList)
+	sort.Strings(actionList)
 	return &rbacService{
-		enforcer: newEnforcer(model, db),
+		enforcer:     newEnforcer(model, db),
+		resourceList: resourceList,
+		actionList:   actionList,
+		resourceN:    len(resourceList),
+		actionN:      len(actionList),
 	}
 }
 
@@ -68,6 +81,46 @@ func wrapError(ok bool, err error) (bool, error) {
 		return ok, ErrAuthorizationService(err, err.Error())
 	}
 	return ok, nil
+}
+
+func (r *rbacService) ValidateResource(resource string) error {
+	if sort.SearchStrings(r.resourceList, resource) < r.resourceN {
+		return nil
+	}
+	return ErrInvalidResourceName(nil, map[string]any{"name": resource})
+}
+
+func (r *rbacService) ValidateAction(action string) error {
+	if sort.SearchStrings(r.actionList, action) < r.actionN {
+		return nil
+	}
+	return ErrInvalidActionName(nil, map[string]any{"name": action})
+}
+
+func (r *rbacService) Validate(resource, action string) error {
+	if err := r.ValidateAction(action); err != nil {
+		return err
+	}
+
+	if err := r.ValidateResource(resource); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *rbacService) BulkValidate(permissions Permissions) error {
+	for _, each := range permissions {
+		action, resource := each.Action, each.Resource
+		if err := r.ValidateAction(action); err != nil {
+			return err
+		}
+
+		if err := r.ValidateResource(resource); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *rbacService) ListUsersForRole(role string) (Users, error) {
@@ -166,33 +219,57 @@ func (r *rbacService) DelUser(user string) (bool, error) {
 }
 
 func (r *rbacService) AddPermissionForUser(user, resource, action string) (bool, error) {
+	if err := r.Validate(resource, action); err != nil {
+		return false, err
+	}
 	return wrapError(r.enforcer.AddPolicy(UserPrefix+user, ResourcePrefix+resource, ActionPrefix+action))
 }
 
 func (r *rbacService) DelPermissionForUser(user, resource, action string) (bool, error) {
+	if err := r.Validate(resource, action); err != nil {
+		return false, err
+	}
 	return wrapError(r.enforcer.RemovePolicy(UserPrefix+user, ResourcePrefix+resource, ActionPrefix+action))
 }
 
 func (r *rbacService) AddPermissionForRole(role, resource, action string) (bool, error) {
+	if err := r.Validate(resource, action); err != nil {
+		return false, err
+	}
 	return wrapError(r.enforcer.AddPolicy(RolePrefix+role, ResourcePrefix+resource, ActionPrefix+action))
 }
 
 func (r *rbacService) DelPermissionForRole(role, resource, action string) (bool, error) {
+	if err := r.Validate(resource, action); err != nil {
+		return false, err
+	}
 	return wrapError(r.enforcer.RemovePolicy(RolePrefix+role, ResourcePrefix+resource, ActionPrefix+action))
 }
 
 func (r *rbacService) AddPermissionsForUser(user string, perms Permissions) (bool, error) {
+	if err := r.BulkValidate(perms); err != nil {
+		return false, err
+	}
 	return wrapError(r.enforcer.AddPolicies(perms.translate(UserPrefix + user)))
 }
 
 func (r *rbacService) DelPermissionsForUser(user string, perms Permissions) (bool, error) {
+	if err := r.BulkValidate(perms); err != nil {
+		return false, err
+	}
 	return wrapError(r.enforcer.RemovePolicies(perms.translate(UserPrefix + user)))
 }
 
 func (r *rbacService) AddPermissionsForRole(role string, perms Permissions) (bool, error) {
+	if err := r.BulkValidate(perms); err != nil {
+		return false, err
+	}
 	return wrapError(r.enforcer.AddPolicies(perms.translate(RolePrefix + role)))
 }
 
 func (r *rbacService) DelPermissionsForRole(role string, perms Permissions) (bool, error) {
+	if err := r.BulkValidate(perms); err != nil {
+		return false, err
+	}
 	return wrapError(r.enforcer.RemovePolicies(perms.translate(RolePrefix + role)))
 }
