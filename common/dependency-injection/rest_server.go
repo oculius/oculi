@@ -74,7 +74,7 @@ func APIVersion(version int) IndirectDependency {
 	return NewComponent(fmt.Sprintf("v%d", version))
 }
 
-func ComponentSupplier(moduleName string, module rest.Module) IndirectDependency {
+func SupplyModule(moduleName string, module rest.Module) IndirectDependency {
 	return &singleHolder{TS(module, Tag{fmt.Sprintf(`group:"%s_modules"`, moduleName)}, new(rest.Module))}
 }
 
@@ -99,8 +99,8 @@ func moduleProviderFnValidator(moduleProviderFn any) {
 	}
 }
 
-// ComponentProvider acts same as ComponentSupplier, but moduleProviderFn should return rest.Module
-func ComponentProvider(moduleName string, moduleProviderFn any, paramTag Tag) IndirectDependency {
+// ProvideModule acts same as SupplyModule, but moduleProviderFn should return rest.Module
+func ProvideModule(moduleName string, moduleProviderFn any, paramTag Tag) IndirectDependency {
 	moduleProviderFnValidator(moduleProviderFn)
 	return &singleHolder{TP(moduleProviderFn, paramTag, Tag{fmt.Sprintf(`group:"%s_modules"`, moduleName)})}
 }

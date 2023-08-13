@@ -21,6 +21,8 @@ type (
 		Lookup(...token.Token) (map[string]token.Token, errext.Error)
 		Send(response.Convertible) error
 		SendPretty(response.Convertible) error
+		IsDevelopment() bool
+		AutoSend(response.Convertible) error
 		RequestContext() context.Context
 	}
 )
@@ -35,6 +37,17 @@ func (c *oculiContext) Send(httpResponse response.Convertible) error {
 
 func (c *oculiContext) SendPretty(httpResponse response.Convertible) error {
 	return c.JSONPretty(httpResponse.ResponseCode(), response.New(httpResponse), "\t")
+}
+
+func (c *oculiContext) IsDevelopment() bool {
+	return c.Get("development") != nil
+}
+
+func (c *oculiContext) AutoSend(httpResponse response.Convertible) error {
+	if c.IsDevelopment() {
+		return c.SendPretty(httpResponse)
+	}
+	return c.SendPretty(httpResponse)
 }
 
 func NewContext(echoCtx echo.Context) Context {

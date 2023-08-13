@@ -85,6 +85,12 @@ func (w *webServer) Run() error {
 	w.resource.Engine().Echo.HideBanner = true
 	if w.config.IsDevelopmentMode() {
 		w.resource.Engine().Use(w.requestPrinter)
+		w.resource.Engine().Use(func(next oculi.HandlerFunc) oculi.HandlerFunc {
+			return func(ctx oculi.Context) error {
+				ctx.Set("development", true)
+				return next(ctx)
+			}
+		})
 		printerInstance.printRoutes(w.resource.Engine().Echo)
 	}
 	if err := w.apply(w.beforeRun); err != nil {
