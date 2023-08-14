@@ -1,4 +1,4 @@
-package authorization
+package authz
 
 import (
 	errext "github.com/oculius/oculi/v2/common/error-extension"
@@ -14,6 +14,9 @@ type (
 		ListUsersForRole(role string) (Users, error)
 		ListRolesForUser(user string) (Roles, error)
 		ListPermissionsForUser(user string) Permissions
+
+		ListResources() []string
+		ListActions() []string
 
 		ValidateResource(resource string) error
 		ValidateAction(action string) error
@@ -54,6 +57,8 @@ type (
 		ListUsersForRole(ctx oculi.Context) error
 		ListRolesForUser(ctx oculi.Context) error
 		ListPermissionsForUser(ctx oculi.Context) error
+		ListResourcesAndActions(ctx oculi.Context) error
+		ListCurrentUserPermissions(ctx oculi.Context) error
 
 		IsUserIn(ctx oculi.Context) error
 		HasRolePermission(ctx oculi.Context) error
@@ -83,8 +88,12 @@ type (
 )
 
 var (
+	PublicIdentifier = "guest"
+
 	ErrAuthorizationService = errext.New("authorization service error", http.StatusInternalServerError)
 	ErrInvalidResourceName  = errext.New("invalid resource name", http.StatusBadRequest)
 	ErrInvalidActionName    = errext.New("invalid action name", http.StatusBadRequest)
 	ErrForbidden            = errext.New("no permission", http.StatusForbidden)
 )
+
+const RolePrefix = "role_"

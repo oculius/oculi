@@ -3,7 +3,7 @@
 - [ ] Excel
 - [ ] Validator
 - [ ] Storage / S3 Protocols
-- [ ] Worker Abstraction (Pool, Internal CRON)
+- [ ] Worker Abstraction (Pool, Internal CRON) -> pond & gocron
 - [ ] Local Feature Flag
 - [ ] DB?
 - [ ] Authorization -> Casbin

@@ -1,4 +1,4 @@
-package authorization
+package authz
 
 import (
 	"github.com/oculius/oculi/v2/common/response"

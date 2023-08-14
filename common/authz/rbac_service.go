@@ -1,4 +1,4 @@
-package authorization
+package authz
 
 import (
 	"github.com/casbin/casbin/v2"
@@ -20,6 +20,18 @@ type (
 		actionN    int
 	}
 )
+
+func (r *rbacService) ListResources() []string {
+	var result []string
+	copy(result[:], r.resourceList)
+	return result
+}
+
+func (r *rbacService) ListActions() []string {
+	var result []string
+	copy(result[:], r.actionList)
+	return result
+}
 
 func NewRBACService(db *gorm.DB, resourceList, actionList []string) RBAC {
 	model :=

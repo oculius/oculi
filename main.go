@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	authtoken "github.com/oculius/oculi/v2/common/auth-token"
+	"github.com/oculius/oculi/v2/common/authz"
 	"github.com/oculius/oculi/v2/common/dependency-injection"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/common/response"
@@ -164,6 +166,14 @@ func main() {
 	//fmt.Println(m.Get(ctx, "gugufloat", &f))
 	//fmt.Println(m.Get(ctx, "gugs", &f))
 	//fmt.Println(i, f)
+
+	x, err := json.Marshal(authz.Permissions{
+		authz.Permission{Resource: "123", Action: "write"},
+		authz.Permission{Resource: "456", Action: "read"}})
+	fmt.Println(string(x), err)
+	var prm authz.Permissions
+	fmt.Println(json.Unmarshal([]byte(`["123 writesss ","456111 read"]`), &prm))
+	fmt.Println(prm)
 
 	time.Local, _ = time.LoadLocation("Asia/Jakarta")
 	di.Compose(
