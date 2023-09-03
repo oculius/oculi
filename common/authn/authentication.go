@@ -8,25 +8,25 @@ import (
 )
 
 type (
-	authenticationEngine[V any] struct {
-		AuthTokenEngine DefaultAuthenticationTokenEngine[V]
+	authenticationEngine[UserDTO any] struct {
+		AuthTokenEngine DefaultAuthenticationTokenEngine[UserDTO]
 		TokenFactory    TokenFactory
 		CredentialsKey  string
 	}
 
-	Factory[V any] interface {
+	MiddlewareFactory interface {
 		AuthRequired(next oculi.HandlerFunc) oculi.HandlerFunc
 		AuthOptional(next oculi.HandlerFunc) oculi.HandlerFunc
 	}
 
-	DefaultAuthenticationTokenEngine[V any] authtoken.Engine[*authtoken.Claims[V]]
-	TokenFactory                            func(isReq bool) token.Token
+	DefaultAuthenticationTokenEngine[UserDTO any] authtoken.Engine[*authtoken.Claims[UserDTO]]
+	TokenFactory                                  func(isReq bool) token.Token
 )
 
-func NewAuthenticationEngine[V any](credentialsKey string,
+func NewAuthenticationEngine[UserDTO any](credentialsKey string,
 	tokenSource token.TokenSource, tokenSourceKey string,
-	authTokenEngine DefaultAuthenticationTokenEngine[V]) Factory[V] {
-	return &authenticationEngine[V]{
+	authTokenEngine DefaultAuthenticationTokenEngine[UserDTO]) MiddlewareFactory {
+	return &authenticationEngine[UserDTO]{
 		AuthTokenEngine: authTokenEngine,
 		TokenFactory: func(isReq bool) token.Token {
 			return token.T(tokenSource, tokenSourceKey, token.String, isReq)
@@ -35,7 +35,7 @@ func NewAuthenticationEngine[V any](credentialsKey string,
 	}
 }
 
-func (a *authenticationEngine[V]) AuthRequired(next oculi.HandlerFunc) oculi.HandlerFunc {
+func (a *authenticationEngine[UserDTO]) AuthRequired(next oculi.HandlerFunc) oculi.HandlerFunc {
 	return func(ctx oculi.Context) error {
 		tkn := a.TokenFactory(true)
 		tokenMap, err := ctx.Lookup(tkn)
@@ -58,7 +58,7 @@ func (a *authenticationEngine[V]) AuthRequired(next oculi.HandlerFunc) oculi.Han
 	}
 }
 
-func (a *authenticationEngine[V]) AuthOptional(next oculi.HandlerFunc) oculi.HandlerFunc {
+func (a *authenticationEngine[UserDTO]) AuthOptional(next oculi.HandlerFunc) oculi.HandlerFunc {
 	return func(ctx oculi.Context) error {
 		tkn := a.TokenFactory(false)
 		tokenMap, err := ctx.Lookup(tkn)
