@@ -1,9 +1,9 @@
-package rest
+package server
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/oculius/oculi/v2/rest-server/oculi"
+	"github.com/oculius/oculi/v2/server/oculi"
 )
 
 type (

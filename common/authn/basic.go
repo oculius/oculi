@@ -2,7 +2,7 @@ package authn
 
 import (
 	"context"
-	"github.com/oculius/oculi/v2/rest-server"
+	"github.com/oculius/oculi/v2/server"
 )
 
 type (
@@ -24,7 +24,7 @@ type (
 	}
 
 	BasicRestModule interface {
-		rest.Module
+		server.Module
 
 		Login(ctx context.Context) error
 		WhoAmI(ctx context.Context) error

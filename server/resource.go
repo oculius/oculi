@@ -1,8 +1,8 @@
-package rest
+package server
 
 import (
 	"github.com/oculius/oculi/v2/common/logs"
-	"github.com/oculius/oculi/v2/rest-server/oculi"
+	"github.com/oculius/oculi/v2/server/oculi"
 	"github.com/pkg/errors"
 	"strings"
 	"time"

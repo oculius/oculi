@@ -3,8 +3,8 @@ package authn
 import (
 	"github.com/oculius/oculi/v2/common/auth-token"
 	"github.com/oculius/oculi/v2/common/response"
-	"github.com/oculius/oculi/v2/rest-server/oculi"
-	"github.com/oculius/oculi/v2/rest-server/oculi/token"
+	"github.com/oculius/oculi/v2/server/oculi"
+	"github.com/oculius/oculi/v2/server/oculi/token"
 )
 
 type (

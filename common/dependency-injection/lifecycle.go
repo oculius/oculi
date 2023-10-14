@@ -2,13 +2,13 @@ package di
 
 import (
 	"context"
-	"github.com/oculius/oculi/v2/rest-server"
+	"github.com/oculius/oculi/v2/server"
 	"go.uber.org/fx"
 	"golang.org/x/sys/unix"
 	"sync"
 )
 
-func newLifecycleHook(wg *sync.WaitGroup, srv rest.Server) fx.Hook {
+func newLifecycleHook(wg *sync.WaitGroup, srv server.Server) fx.Hook {
 	wg.Add(1)
 	return fx.Hook{
 		OnStart: func(_ context.Context) error {

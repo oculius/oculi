@@ -1,4 +1,4 @@
-package rest
+package server
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/oculius/oculi/v2/common/error-extension"
 	"github.com/oculius/oculi/v2/common/logs"
 	"github.com/oculius/oculi/v2/common/response"
-	"github.com/oculius/oculi/v2/rest-server/oculi"
+	"github.com/oculius/oculi/v2/server/oculi"
 	"github.com/pkg/errors"
 	"net/http"
 	"os"
@@ -103,7 +103,7 @@ func (w *webServer) Run() error {
 		return err
 	}
 
-	w.resource.Logger().Infof("http rest-server started, name: %s", w.resource.ServiceName())
+	w.resource.Logger().Infof("http server started, name: %s", w.resource.ServiceName())
 	<-w.signal
 
 	if err := w.apply(w.beforeExit); err != nil {
@@ -178,7 +178,7 @@ func (w *webServer) start() error {
 	}
 
 	if err := w.core.Init(echoEngine); err != nil {
-		w.resource.Logger().Error("error on init http rest-server")
+		w.resource.Logger().Error("error on init http server")
 		return err
 	}
 
@@ -190,7 +190,7 @@ func (w *webServer) start() error {
 
 func (w *webServer) serve() {
 	if err := w.resource.Engine().Start(fmt.Sprintf(":%d", w.resource.ServerPort())); err != nil {
-		w.resource.Logger().Infof("http rest-server stopped, %s", err.Error())
+		w.resource.Logger().Infof("http server stopped, %s", err.Error())
 		w.signal <- syscall.SIGINT
 	} else {
 		w.resource.Logger().Info("starting apps")
@@ -205,7 +205,7 @@ func (w *webServer) stop() {
 	}()
 
 	if err := w.resource.Engine().Shutdown(ctx); err != nil {
-		w.resource.Logger().Errorf("failed to shutdown http rest-server %s", err)
+		w.resource.Logger().Errorf("failed to shutdown http server %s", err)
 	}
 	w.resource.Logger().Info("closing resource")
 	if err := w.resource.Close(); err != nil {

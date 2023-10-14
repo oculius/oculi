@@ -2,7 +2,7 @@ package di
 
 import (
 	"fmt"
-	"github.com/oculius/oculi/v2/rest-server"
+	"github.com/oculius/oculi/v2/server"
 	"go.uber.org/fx"
 	"reflect"
 	"sync"
@@ -26,8 +26,8 @@ func (sh *singleHolder) Dependencies() []fx.Option {
 	return []fx.Option{sh.opt}
 }
 
-func newRestServer[X rest.Core, Y rest.Config, Z rest.IResource](core X, c Y, res Z, lc fx.Lifecycle, wg *sync.WaitGroup) (rest.Server, error) {
-	srv, err := rest.New(core, res, c)
+func newRestServer[X server.Core, Y server.Config, Z server.IResource](core X, c Y, res Z, lc fx.Lifecycle, wg *sync.WaitGroup) (server.Server, error) {
+	srv, err := server.New(core, res, c)
 	if err != nil {
 		return nil, err
 	}
@@ -37,11 +37,11 @@ func newRestServer[X rest.Core, Y rest.Config, Z rest.IResource](core X, c Y, re
 
 // Register Rest Server Provider & Invoker
 // Required Dependencies: rest.HealthModule, rest.Config, rest.IResource, *sync.WaitGroup, rest.Module
-func RestServer[X rest.Core, Y rest.Config, Z rest.IResource]() IndirectDependency {
+func RestServer[X server.Core, Y server.Config, Z server.IResource]() IndirectDependency {
 	opts := []fx.Option{
 		P(newRestServer[X, Y, Z]),
-		I(func(srv rest.Server) {}),
-		TP(rest.NewCore,
+		I(func(srv server.Server) {}),
+		TP(server.NewCore,
 			[]string{
 				`optional:"false"`,
 				`group:"components"`,
@@ -58,7 +58,7 @@ func NewComponent(name string) IndirectDependency {
 			TS(fmt.Sprintf("%s", name), Tag{fmt.Sprintf(`name:"%s"`, name)}),
 
 			// Create API Version
-			TP(rest.NewComponent,
+			TP(server.NewComponent,
 				[]string{
 					fmt.Sprintf(`name:"%s"`, name),
 					fmt.Sprintf(`group:"%s_modules"`, name),
@@ -74,11 +74,11 @@ func APIVersion(version int) IndirectDependency {
 	return NewComponent(fmt.Sprintf("v%d", version))
 }
 
-func SupplyModule(moduleName string, module rest.Module) IndirectDependency {
-	return &singleHolder{TS(module, Tag{fmt.Sprintf(`group:"%s_modules"`, moduleName)}, new(rest.Module))}
+func SupplyModule(moduleName string, module server.Module) IndirectDependency {
+	return &singleHolder{TS(module, Tag{fmt.Sprintf(`group:"%s_modules"`, moduleName)}, new(server.Module))}
 }
 
-var restModule = reflect.TypeOf((*rest.Module)(nil)).Elem()
+var restModule = reflect.TypeOf((*server.Module)(nil)).Elem()
 
 func moduleProviderFnValidator(moduleProviderFn any) {
 	fn := reflect.TypeOf(moduleProviderFn)

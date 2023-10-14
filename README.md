@@ -6,7 +6,7 @@
 - [ ] Worker Abstraction (Pool, Internal CRON) -> pond & gocron
 - [ ] Local Feature Flag
 - [ ] DB?
-- [ ] Authorization -> Casbin
+- [x] Authorization -> Casbin
 - [x] Enum
 - [x] Common Functions
 - 

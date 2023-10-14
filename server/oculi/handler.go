@@ -1,6 +1,9 @@
 package oculi
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
 
 type (
 	HandlerFunc    func(ctx Context) error
@@ -13,6 +16,10 @@ func H(handlerFunc HandlerFunc) echo.HandlerFunc {
 		ctx := C(c)
 		return handlerFunc(ctx)
 	}
+}
+
+func WrapHandler(handler http.HandlerFunc) HandlerFunc {
+	return NewHandlerFunc(echo.WrapHandler(handler))
 }
 
 // C stands for Context, Converter for echo.Context to Context
