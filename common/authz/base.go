@@ -4,7 +4,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/gorm-adapter/v3"
-	"github.com/oculius/oculi/v2/rest-server/oculi"
+	"github.com/oculius/oculi/v2/server/oculi"
 	"gorm.io/gorm"
 )
 

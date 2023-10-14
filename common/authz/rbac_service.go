@@ -4,6 +4,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/gorm-adapter/v3"
 	"github.com/oculius/oculi/v2/common/error-extension"
+	"github.com/oculius/oculi/v2/common/utils"
 	"gorm.io/gorm"
 	"sort"
 	"strings"
@@ -20,6 +21,34 @@ type (
 		actionN    int
 	}
 )
+
+func (r *rbacService) AddAction(action ...string) {
+	if len(action) == 0 {
+		return
+	}
+
+	r.actionList = append(r.actionList, action...)
+	r.actionList, _ = utils.ArrayUnique[string, string](
+		r.actionList, func(s string) string {
+			return strings.ToLower(s)
+		})
+	sort.Strings(r.actionList)
+	r.actionN = len(r.actionList)
+}
+
+func (r *rbacService) AddResource(resource ...string) {
+	if len(resource) == 0 {
+		return
+	}
+
+	r.resourceList = append(r.resourceList, resource...)
+	r.resourceList, _ = utils.ArrayUnique[string, string](
+		r.resourceList, func(s string) string {
+			return strings.ToLower(s)
+		})
+	sort.Strings(r.resourceList)
+	r.resourceN = len(r.resourceList)
+}
 
 func (r *rbacService) ListResources() []string {
 	var result []string
@@ -96,14 +125,14 @@ func wrapError(ok bool, err error) (bool, error) {
 }
 
 func (r *rbacService) ValidateResource(resource string) error {
-	if sort.SearchStrings(r.resourceList, resource) < r.resourceN {
+	if idx := sort.SearchStrings(r.resourceList, resource); idx < r.resourceN && r.resourceList[idx] == resource {
 		return nil
 	}
 	return ErrInvalidResourceName(nil, map[string]any{"name": resource})
 }
 
 func (r *rbacService) ValidateAction(action string) error {
-	if sort.SearchStrings(r.actionList, action) < r.actionN {
+	if idx := sort.SearchStrings(r.actionList, action); idx < r.actionN && r.actionList[idx] == action {
 		return nil
 	}
 	return ErrInvalidActionName(nil, map[string]any{"name": action})

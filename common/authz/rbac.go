@@ -2,8 +2,8 @@ package authz
 
 import (
 	errext "github.com/oculius/oculi/v2/common/error-extension"
-	"github.com/oculius/oculi/v2/rest-server"
-	"github.com/oculius/oculi/v2/rest-server/oculi"
+	"github.com/oculius/oculi/v2/server"
+	"github.com/oculius/oculi/v2/server/oculi"
 	"net/http"
 )
 
@@ -17,6 +17,9 @@ type (
 
 		ListResources() []string
 		ListActions() []string
+
+		AddAction(action ...string)
+		AddResource(resource ...string)
 
 		ValidateResource(resource string) error
 		ValidateAction(action string) error
@@ -50,7 +53,7 @@ type (
 	}
 
 	RBACRestModule interface {
-		rest.Module
+		server.Module
 
 		Permission(resource, action string) oculi.MiddlewareFunc
 
