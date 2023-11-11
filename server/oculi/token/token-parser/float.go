@@ -15,7 +15,7 @@ func Float32Parser() Parser {
 	return float32Parser{}
 }
 
-func (i float32Parser) Parse(t Token, value any) (any, errext.Error) {
+func (i float32Parser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -28,7 +28,7 @@ func Float64Parser() Parser {
 	return float64Parser{}
 }
 
-func (i float64Parser) Parse(t Token, value any) (any, errext.Error) {
+func (i float64Parser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -37,7 +37,7 @@ func (i float64Parser) Parse(t Token, value any) (any, errext.Error) {
 	return genericFloatParser[float64](val, 64, t)
 }
 
-func genericFloatParser[T float32 | float64](val string, bitsize int, t Token) (T, errext.Error) {
+func genericFloatParser[T float32 | float64](val string, bitsize int, t Token) (T, errext.HttpError) {
 	var result T
 	conVal, err := strconv.ParseFloat(val, bitsize)
 	if err != nil {

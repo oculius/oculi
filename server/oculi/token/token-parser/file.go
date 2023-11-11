@@ -15,7 +15,7 @@ type (
 	fcb64Parser struct{}
 )
 
-func fileReader(val *multipart.FileHeader, t Token) ([]byte, errext.Error) {
+func fileReader(val *multipart.FileHeader, t Token) ([]byte, errext.HttpError) {
 	file, err := val.Open()
 	if err != nil {
 		return nil, ErrFormFile(err, t.Metadata())
@@ -27,7 +27,7 @@ func fileReader(val *multipart.FileHeader, t Token) ([]byte, errext.Error) {
 	return content, nil
 }
 
-func (f fcb64Parser) Parse(t Token, value any) (any, errext.Error) {
+func (f fcb64Parser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(*multipart.FileHeader)
 	if !ok {
 		return nil, ErrInvalidInputValueFileHeader
@@ -42,7 +42,7 @@ func (f fcb64Parser) Parse(t Token, value any) (any, errext.Error) {
 	return b64, nil
 }
 
-func (f fcbytesParser) Parse(t Token, value any) (any, errext.Error) {
+func (f fcbytesParser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(*multipart.FileHeader)
 	if !ok {
 		return nil, ErrInvalidInputValueFileHeader
@@ -56,7 +56,7 @@ func (f fcbytesParser) Parse(t Token, value any) (any, errext.Error) {
 	return content, nil
 }
 
-func (f fileHeaderParser) Parse(_ Token, value any) (any, errext.Error) {
+func (f fileHeaderParser) Parse(_ Token, value any) (any, errext.HttpError) {
 	val, ok := value.(*multipart.FileHeader)
 	if !ok {
 		return nil, ErrInvalidInputValueFileHeader

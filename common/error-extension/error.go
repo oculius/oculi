@@ -3,7 +3,7 @@ package errext
 import "net/http"
 
 type (
-	Error interface {
+	HttpError interface {
 		error
 		ResponseCode() int
 		ResponseStatus() string
@@ -13,7 +13,7 @@ type (
 		Detail() string
 	}
 
-	ErrorSeed func(source error, metadata any, args ...interface{}) Error
+	HttpErrorSeed func(source error, metadata any, args ...interface{}) HttpError
 )
 
 var ValidatorErrorHttpStatus = http.StatusUnprocessableEntity

@@ -2,10 +2,11 @@ package authn
 
 import (
 	"context"
+	"testing"
+
 	errext "github.com/oculius/oculi/v2/common/error-extension"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 type (
@@ -36,7 +37,7 @@ type (
 	}
 )
 
-func newtestrepo() BasicRepository[userDTO, user] {
+func newtestrepo() Repository[userDTO, user] {
 	return &basicTestRepo{
 		dataTable: map[string]user{},
 	}
@@ -81,28 +82,28 @@ func (u user) Identifier() string {
 }
 
 var (
-	_ UserDAO[userDTO]               = user{}
-	_ BasicRepository[userDTO, user] = &basicTestRepo{}
+	_ UserDAO[userDTO]          = user{}
+	_ Repository[userDTO, user] = &basicTestRepo{}
 )
 
-func Test_BasicAuthentication(t *testing.T) {
-	serviceFactory := func() Basic[userDTO, user] {
-		return NewBasicService[userDTO, user](newtestrepo())
+func Test_Core(t *testing.T) {
+	serviceFactory := func() Core[userDTO, user] {
+		return NewService[userDTO, user](newtestrepo())
 	}
 	repo := newtestrepo()
 	unknownErr := errors.New("unknown error")
-	mockRepo := NewBasicRepository[userDTO, user](repo.InsertUser, repo.GetByIdentifier, repo.VerifyPassword,
+	mockRepo := NewRepository[userDTO, user](repo.InsertUser, repo.GetByIdentifier, repo.VerifyPassword,
 		func(ctx context.Context, identifier string) (bool, error) {
 			return false, unknownErr
 		})
-	mockRepo2 := NewBasicRepository[userDTO, user](repo.InsertUser, func(ctx context.Context, identifier string) (user, error) {
+	mockRepo2 := NewRepository[userDTO, user](repo.InsertUser, func(ctx context.Context, identifier string) (user, error) {
 		return user{}, unknownErr
 	}, repo.VerifyPassword, func(ctx context.Context, identifier string) (bool, error) {
 		return true, nil
 	})
 	service1 := serviceFactory()
-	service3 := NewBasicService(mockRepo)
-	service4 := NewBasicService(mockRepo2)
+	service3 := NewService(mockRepo)
+	service4 := NewService(mockRepo2)
 
 	t.Run("register", func(tt *testing.T) {
 		err := service1.Register(context.Background(), user{
@@ -125,7 +126,7 @@ func Test_BasicAuthentication(t *testing.T) {
 			Password: "1234",
 		})
 		assert.Error(tt, err)
-		aerr, ok := err.(errext.Error)
+		aerr, ok := err.(errext.HttpError)
 		assert.True(tt, ok)
 		assert.Equal(tt, 500, aerr.ResponseCode())
 
@@ -140,28 +141,28 @@ func Test_BasicAuthentication(t *testing.T) {
 	t.Run("login", func(tt *testing.T) {
 		_, login, err := service3.Login(context.Background(), "asd", "123")
 		assert.Error(tt, err)
-		aerr, ok := err.(errext.Error)
+		aerr, ok := err.(errext.HttpError)
 		assert.True(tt, ok)
 		assert.Equal(tt, 500, aerr.ResponseCode())
 		assert.False(tt, login)
 
 		_, login, err = service1.Login(context.Background(), "asd3", "1234")
 		assert.Error(tt, err)
-		aerr, ok = err.(errext.Error)
+		aerr, ok = err.(errext.HttpError)
 		assert.True(tt, ok)
 		assert.Equal(tt, 400, aerr.ResponseCode())
 		assert.False(tt, login)
 
 		_, login, err = service4.Login(context.Background(), "asd", "1234")
 		assert.Error(tt, err)
-		aerr, ok = err.(errext.Error)
+		aerr, ok = err.(errext.HttpError)
 		assert.True(tt, ok)
 		assert.Equal(tt, 500, aerr.ResponseCode())
 		assert.False(tt, login)
 
 		_, login, err = service1.Login(context.Background(), "asd2", "wrongpassword")
 		assert.Error(tt, err)
-		aerr, ok = err.(errext.Error)
+		aerr, ok = err.(errext.HttpError)
 		assert.True(tt, ok)
 		assert.Equal(tt, 400, aerr.ResponseCode())
 		assert.False(tt, login)

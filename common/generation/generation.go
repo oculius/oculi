@@ -10,9 +10,9 @@ import (
 
 type (
 	Generator interface {
-		Generate() (*bytes.Buffer, errext.Error)
-		FileGenerate(fileName string) errext.Error
-		IOGenerate(writer io.Writer) errext.Error
+		Generate() (*bytes.Buffer, errext.HttpError)
+		FileGenerate(fileName string) errext.HttpError
+		IOGenerate(writer io.Writer) errext.HttpError
 	}
 )
 

@@ -1,8 +1,9 @@
 package errext
 
 import (
-	"github.com/pkg/errors"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 type (
@@ -24,13 +25,13 @@ type (
 	HttpStatusMapFunc func(error) int
 )
 
-func NewConditional(id string, formatter FormatFunc, conditionalHttpStatus HttpStatusMapFunc) ErrorSeed {
+func NewConditional(id string, formatter FormatFunc, conditionalHttpStatus HttpStatusMapFunc) HttpErrorSeed {
 	return (&dynamicErrorSeed{
 		id, formatter, conditionalHttpStatus,
 	}).build
 }
 
-func (d dynamicErrorSeed) build(source error, metadata any, args ...interface{}) Error {
+func (d dynamicErrorSeed) build(source error, metadata any, args ...interface{}) HttpError {
 	if d.detail == nil || d.httpStatus == nil {
 		panic("seed formatter or conditional http status is nil")
 	}

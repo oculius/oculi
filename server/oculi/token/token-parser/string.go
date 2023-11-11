@@ -14,7 +14,7 @@ type (
 	timeParser struct{}
 )
 
-func (s stringParser) Parse(_ Token, value any) (any, errext.Error) {
+func (s stringParser) Parse(_ Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -34,7 +34,7 @@ func TimeParser() Parser {
 	return timeParser{}
 }
 
-func (tps timeParser) Parse(t Token, value any) (any, errext.Error) {
+func (tps timeParser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -47,7 +47,7 @@ func (tps timeParser) Parse(t Token, value any) (any, errext.Error) {
 	return conVal, nil
 }
 
-func (u uuidStringParser) Parse(t Token, value any) (any, errext.Error) {
+func (u uuidStringParser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString

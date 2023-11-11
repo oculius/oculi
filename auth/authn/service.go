@@ -2,22 +2,15 @@ package authn
 
 import (
 	"context"
-	errext "github.com/oculius/oculi/v2/common/error-extension"
-	"net/http"
 )
 
 type (
-	basicService[UserDTO any, DAO UserDAO[UserDTO]] struct {
-		repository BasicRepository[UserDTO, DAO]
+	service[UserDTO any, DAO UserDAO[UserDTO]] struct {
+		repository Repository[UserDTO, DAO]
 	}
 )
 
-var (
-	ErrAuthnFailedServer = errext.New("failed, server error", http.StatusInternalServerError)
-	ErrAuthnFailedUser   = errext.New("failed, user error", http.StatusBadRequest)
-)
-
-func (b *basicService[UserDTO, UserDAO]) Login(ctx context.Context, identifier string, password string) (UserDAO, bool, error) {
+func (b *service[UserDTO, UserDAO]) Login(ctx context.Context, identifier string, password string) (UserDAO, bool, error) {
 	var empty UserDAO
 	found, err := b.repository.LookupIdentifier(ctx, identifier)
 	if err != nil {
@@ -39,7 +32,7 @@ func (b *basicService[UserDTO, UserDAO]) Login(ctx context.Context, identifier s
 	return user, true, nil
 }
 
-func (b *basicService[UserDTO, UserDAO]) Register(ctx context.Context, user UserDAO) error {
+func (b *service[UserDTO, UserDAO]) Register(ctx context.Context, user UserDAO) error {
 	found, err := b.repository.LookupIdentifier(ctx, user.Identifier())
 	if err != nil {
 		return ErrAuthnFailedServer(err, nil)
@@ -50,8 +43,8 @@ func (b *basicService[UserDTO, UserDAO]) Register(ctx context.Context, user User
 	return b.repository.InsertUser(ctx, user)
 }
 
-func NewBasicService[UserDTO any, DAO UserDAO[UserDTO]](
-	repo BasicRepository[UserDTO, DAO],
-) Basic[UserDTO, DAO] {
-	return &basicService[UserDTO, DAO]{repository: repo}
+func NewService[UserDTO any, DAO UserDAO[UserDTO]](
+	repo Repository[UserDTO, DAO],
+) Core[UserDTO, DAO] {
+	return &service[UserDTO, DAO]{repository: repo}
 }

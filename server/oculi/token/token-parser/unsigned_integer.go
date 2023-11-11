@@ -1,9 +1,10 @@
 package tp
 
 import (
-	"github.com/oculius/oculi/v2/common/error-extension"
 	"math/bits"
 	"strconv"
+
+	"github.com/oculius/oculi/v2/common/error-extension"
 )
 
 type (
@@ -22,7 +23,7 @@ func UintParser() Parser {
 	return uintParser{}
 }
 
-func (i uintParser) Parse(t Token, value any) (any, errext.Error) {
+func (i uintParser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -39,7 +40,7 @@ func Uint8Parser() Parser {
 	return uint8Parser{}
 }
 
-func (i uint8Parser) Parse(t Token, value any) (any, errext.Error) {
+func (i uint8Parser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -52,7 +53,7 @@ func Uint16Parser() Parser {
 	return uint16Parser{}
 }
 
-func (i uint16Parser) Parse(t Token, value any) (any, errext.Error) {
+func (i uint16Parser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -65,7 +66,7 @@ func Uint32Parser() Parser {
 	return uint32Parser{}
 }
 
-func (i uint32Parser) Parse(t Token, value any) (any, errext.Error) {
+func (i uint32Parser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -78,7 +79,7 @@ func Uint64Parser() Parser {
 	return uint64Parser{}
 }
 
-func (i uint64Parser) Parse(t Token, value any) (any, errext.Error) {
+func (i uint64Parser) Parse(t Token, value any) (any, errext.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -87,7 +88,7 @@ func (i uint64Parser) Parse(t Token, value any) (any, errext.Error) {
 	return genericUintParser[uint64](val, 64, t)
 }
 
-func genericUintParser[T uint8 | uint16 | uint32 | uint64](val string, bitsize int, t Token) (T, errext.Error) {
+func genericUintParser[T uint8 | uint16 | uint32 | uint64](val string, bitsize int, t Token) (T, errext.HttpError) {
 	var result T
 	conVal, err := strconv.ParseUint(val, 10, bitsize)
 	if err != nil {

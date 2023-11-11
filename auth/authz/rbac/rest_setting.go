@@ -1,9 +1,10 @@
-package authz
+package rbac
 
 import (
-	"github.com/oculius/oculi/v2/server/oculi"
 	"reflect"
 	"strings"
+
+	"github.com/oculius/oculi/v2/server/oculi"
 )
 
 type (
@@ -66,14 +67,14 @@ func (s *Setting) ok() bool {
 	return true
 }
 
-func (s *Setting) permissionChecker(r RBACRestModule) oculi.MiddlewareFunc {
+func (s *Setting) permissionChecker(r RestModule) oculi.MiddlewareFunc {
 	if len(strings.TrimSpace(s.Permission)) > 0 && len(strings.TrimSpace(s.Name)) > 0 {
 		return r.Permission(s.Permission, s.Name)
 	}
 	return nil
 }
 
-func (s *Setting) middlewares(base []oculi.MiddlewareFunc, r RBACRestModule) []oculi.MiddlewareFunc {
+func (s *Setting) middlewares(base []oculi.MiddlewareFunc, r RestModule) []oculi.MiddlewareFunc {
 	var result []oculi.MiddlewareFunc
 	if len(base) > 0 {
 		copy(result, base[:])
@@ -98,8 +99,9 @@ func setFieldsToEmpty(target, empty interface{}) {
 		emptyField := emptyValue.Field(i)
 		name := emptyField.Elem().Type().Name()
 
-		if targetField.Kind() == reflect.Struct || name == "UserRouteSetting" || name == "RoleRouteSetting" || name == "PermissionRouteSetting" {
-			if name == "UserRouteSetting" || name == "RoleRouteSetting" || name == "PermissionRouteSetting" {
+		isNested := name == "UserRouteSetting" || name == "RoleRouteSetting" || name == "PermissionRouteSetting"
+		if targetField.Kind() == reflect.Struct || isNested {
+			if isNested {
 				if targetField.IsZero() {
 					targetField.Set(emptyField)
 				} else {
@@ -110,7 +112,7 @@ func setFieldsToEmpty(target, empty interface{}) {
 			// If the field is a struct, recursively call the function
 			setFieldsToEmpty(targetField.Addr().Interface(), emptyField.Addr().Interface())
 		} else if targetField.IsZero() {
-			// If the field is zero, set it to the value from the 'empty' struct
+			// If the field is zero, set it to the value from the 'emptySetting' struct
 			targetField.Set(emptyField)
 		}
 		if setting, ok := targetField.Interface().(*Setting); ok {
@@ -122,10 +124,10 @@ func setFieldsToEmpty(target, empty interface{}) {
 }
 
 func (r *RouteSetting) validate() {
-	setFieldsToEmpty(r, empty)
+	setFieldsToEmpty(r, emptySetting)
 }
 
-var empty = &RouteSetting{
+var emptySetting = &RouteSetting{
 	Root: &Setting{
 		Middlewares: nil,
 		Name:        "",

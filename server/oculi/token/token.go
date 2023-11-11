@@ -28,7 +28,7 @@ type (
 		IsRequired() bool
 		Source() TokenSource
 		Type() Kind
-		Apply(ctx echo.Context) errext.Error
+		Apply(ctx echo.Context) errext.HttpError
 		String() string
 	}
 
@@ -84,7 +84,7 @@ func (t *token) DataTypeString() string {
 	return t.dataType.String()
 }
 
-func (t *token) getValue(ctx echo.Context) (string, *multipart.FileHeader, errext.Error) {
+func (t *token) getValue(ctx echo.Context) (string, *multipart.FileHeader, errext.HttpError) {
 	var (
 		fh         *multipart.FileHeader
 		val        string
@@ -128,7 +128,7 @@ func (t *token) getValue(ctx echo.Context) (string, *multipart.FileHeader, errex
 	return val, fh, nil
 }
 
-func (t *token) checkEmpty(val string, formFile *multipart.FileHeader) (bool, errext.Error) {
+func (t *token) checkEmpty(val string, formFile *multipart.FileHeader) (bool, errext.HttpError) {
 	if (t.dataType.IsFromFormFile() && formFile == nil) || (!t.dataType.IsFromFormFile() && len(val) == 0) {
 		t.value = nil
 		if t.isRequired {
@@ -140,7 +140,7 @@ func (t *token) checkEmpty(val string, formFile *multipart.FileHeader) (bool, er
 	return false, nil
 }
 
-func (t *token) parse(val string, ff *multipart.FileHeader) errext.Error {
+func (t *token) parse(val string, ff *multipart.FileHeader) errext.HttpError {
 	var parser tp2.Parser
 	switch t.dataType {
 	case Bool:
@@ -188,7 +188,7 @@ func (t *token) parse(val string, ff *multipart.FileHeader) errext.Error {
 	}
 
 	var result any
-	var err errext.Error
+	var err errext.HttpError
 	if t.dataType.IsFromFormFile() {
 		result, err = parser.Parse(t, ff)
 	} else {
@@ -201,7 +201,7 @@ func (t *token) parse(val string, ff *multipart.FileHeader) errext.Error {
 	return nil
 }
 
-func (t *token) Apply(ctx echo.Context) errext.Error {
+func (t *token) Apply(ctx echo.Context) errext.HttpError {
 	val, formFile, err := t.getValue(ctx)
 	if err != nil {
 		return err
@@ -221,7 +221,7 @@ func (t *token) Apply(ctx echo.Context) errext.Error {
 	return nil
 }
 
-func TokenValue[T ExtractTypeLimiter](token Token) (T, errext.Error) {
+func TokenValue[T ExtractTypeLimiter](token Token) (T, errext.HttpError) {
 	var result T
 	val := token.rawvalue()
 	if val == nil {

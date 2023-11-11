@@ -1,21 +1,34 @@
-package authz
+package rbac
 
 import (
+	authz2 "github.com/oculius/oculi/v2/auth/authz"
 	"github.com/oculius/oculi/v2/common/response"
 	"github.com/oculius/oculi/v2/server/oculi"
 	"github.com/oculius/oculi/v2/server/oculi/token"
 )
 
 type (
-	bulkPermEndPointFunc     func(string, Permissions) (bool, error)
+	tripleDataReq interface {
+		value() (target string, resource string, action string)
+	}
+
+	doubleDataReq[T any, V any] interface {
+		value() (T, V)
+	}
+
+	singleDataReq interface {
+		value() string
+	}
+
+	bulkPermEndPointFunc     func(string, authz2.Permissions) (bool, error)
 	tripleDataEndPointFunc   func(string, string, string) (bool, error)
 	dataCheckerEndPointFunc  func(string, string, string) bool
 	twinStringEndPointFunc   func(string, string) (bool, error)
-	stringRolesEndPointFunc  func(string, Roles) (bool, error)
+	stringRolesEndPointFunc  func(string, authz2.Roles) (bool, error)
 	singleStringEndPointFunc func(string) (bool, error)
 )
 
-func bulkPermEndpoint[T doubleDataReq[string, Permissions]](fn bulkPermEndPointFunc, ctx oculi.Context) error {
+func bulkPermEndpoint[T doubleDataReq[string, authz2.Permissions]](fn bulkPermEndPointFunc, ctx oculi.Context) error {
 	var body T
 	if err := ctx.BindValidate(&body); err != nil {
 		return err
@@ -84,7 +97,7 @@ func twinStringCheckerEndpoint[T doubleDataReq[string, string]](fn twinStringEnd
 	return ctx.AutoSend(response.NewResponse("success", map[string]any{"result": ok}, nil))
 }
 
-func stringRolesEndpoint[T doubleDataReq[string, Roles]](fn stringRolesEndPointFunc, ctx oculi.Context) error {
+func stringRolesEndpoint[T doubleDataReq[string, authz2.Roles]](fn stringRolesEndPointFunc, ctx oculi.Context) error {
 	var body T
 	if err := ctx.BindValidate(&body); err != nil {
 		return err

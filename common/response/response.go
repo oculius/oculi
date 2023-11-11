@@ -41,7 +41,7 @@ func New(resp Convertible) Body {
 		},
 	}
 	normal, ok := resp.(DetailConvertible)
-	err, ok2 := resp.(errext.Error)
+	err, ok2 := resp.(errext.HttpError)
 	if ok && ok2 {
 		panic("ambigous http response")
 	} else if ok {

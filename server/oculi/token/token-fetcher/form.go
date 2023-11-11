@@ -1,11 +1,12 @@
 package tf
 
 import (
+	"mime/multipart"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/oculius/oculi/v2/common/error-extension"
 	"github.com/pkg/errors"
-	"mime/multipart"
-	"net/http"
 )
 
 type (
@@ -21,7 +22,7 @@ func FormFileFetcher() Fetcher[*multipart.FileHeader] {
 	return formfileFetcher{}
 }
 
-func (f formfileFetcher) Fetch(ctx echo.Context, t Token) (*multipart.FileHeader, errext.Error) {
+func (f formfileFetcher) Fetch(ctx echo.Context, t Token) (*multipart.FileHeader, errext.HttpError) {
 	if ctx.Request() == nil {
 		return nil, ErrRequestNotFound(nil, t.Metadata())
 	}
@@ -34,6 +35,6 @@ func (f formfileFetcher) Fetch(ctx echo.Context, t Token) (*multipart.FileHeader
 	return fh, nil
 }
 
-func (f formFetcher) Fetch(ctx echo.Context, t Token) (string, errext.Error) {
+func (f formFetcher) Fetch(ctx echo.Context, t Token) (string, errext.HttpError) {
 	return ctx.FormValue(t.Key()), nil
 }

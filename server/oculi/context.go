@@ -17,8 +17,8 @@ type (
 
 	Context interface {
 		echo.Context
-		BindValidate(interface{}) errext.Error
-		Lookup(...token.Token) (map[string]token.Token, errext.Error)
+		BindValidate(interface{}) errext.HttpError
+		Lookup(...token.Token) (map[string]token.Token, errext.HttpError)
 		Send(response.Convertible) error
 		SendPretty(response.Convertible) error
 		IsDevelopment() bool
@@ -57,7 +57,7 @@ func NewContext(echoCtx echo.Context) Context {
 	}
 }
 
-func (c *oculiContext) Lookup(tokens ...token.Token) (map[string]token.Token, errext.Error) {
+func (c *oculiContext) Lookup(tokens ...token.Token) (map[string]token.Token, errext.HttpError) {
 	N := len(tokens)
 	if N == 0 {
 		return nil, nil
@@ -73,7 +73,7 @@ func (c *oculiContext) Lookup(tokens ...token.Token) (map[string]token.Token, er
 	return result, nil
 }
 
-func (c *oculiContext) BindValidate(obj interface{}) errext.Error {
+func (c *oculiContext) BindValidate(obj interface{}) errext.HttpError {
 	if err := c.Bind(obj); err != nil {
 		return ErrDataBinding(err, nil)
 	}

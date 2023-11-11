@@ -1,8 +1,9 @@
 package errext
 
 import (
-	"github.com/pkg/errors"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 type (
@@ -19,11 +20,11 @@ type (
 	}
 )
 
-func New(detail string, httpStatus int) ErrorSeed {
+func New(detail string, httpStatus int) HttpErrorSeed {
 	return (&staticErrorSeed{detail, httpStatus}).Build
 }
 
-func (s *staticErrorSeed) Build(source error, metadata any, _ ...interface{}) Error {
+func (s *staticErrorSeed) Build(source error, metadata any, _ ...interface{}) HttpError {
 	if source == nil {
 		source = errors.New(s.detail)
 	}

@@ -1,19 +1,37 @@
-package authz
+package rbac
 
 import (
-	errext "github.com/oculius/oculi/v2/common/error-extension"
+	authz2 "github.com/oculius/oculi/v2/auth/authz"
 	"github.com/oculius/oculi/v2/server"
 	"github.com/oculius/oculi/v2/server/oculi"
-	"net/http"
+)
+
+const (
+	accessControlModel = `
+[request_definition]
+r = sub, obj, act
+
+[policy_definition]
+p = sub, obj, act
+
+[role_definition]
+g = _, _
+
+[policy_effect]
+e = some(where (p.eft == allow))
+
+[matchers]
+m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act || r.sub == "root"
+`
 )
 
 type (
-	RBAC interface {
-		Service
+	Service interface {
+		authz2.CasbinService
 
-		ListUsersForRole(role string) (Users, error)
-		ListRolesForUser(user string) (Roles, error)
-		ListPermissionsForUser(user string) Permissions
+		ListUsersForRole(role string) (authz2.Users, error)
+		ListRolesForUser(user string) (authz2.Roles, error)
+		ListPermissionsForUser(user string) authz2.Permissions
 
 		ListResources() []string
 		ListActions() []string
@@ -24,7 +42,7 @@ type (
 		ValidateResource(resource string) error
 		ValidateAction(action string) error
 		Validate(resource, action string) error
-		BulkValidate(permissions Permissions) error
+		BulkValidate(permissions authz2.Permissions) error
 
 		IsUserIn(user, role string) (bool, error)
 		HasRolePermission(role, resource, action string) bool
@@ -35,8 +53,8 @@ type (
 		AddInheritance(parentRole, childRole string) (bool, error)
 		DelInheritance(parentRole, childRole string) (bool, error)
 
-		AddRolesForUser(user string, roles Roles) (bool, error)
-		DelRolesForUser(user string, roles Roles) (bool, error)
+		AddRolesForUser(user string, roles authz2.Roles) (bool, error)
+		DelRolesForUser(user string, roles authz2.Roles) (bool, error)
 
 		DelRole(role string) (bool, error)
 		DelUser(user string) (bool, error)
@@ -46,15 +64,16 @@ type (
 		AddPermissionForRole(role, resource, action string) (bool, error)
 		DelPermissionForRole(role, resource, action string) (bool, error)
 
-		AddPermissionsForUser(user string, perms Permissions) (bool, error)
-		DelPermissionsForUser(user string, perms Permissions) (bool, error)
-		AddPermissionsForRole(role string, perms Permissions) (bool, error)
-		DelPermissionsForRole(role string, perms Permissions) (bool, error)
+		AddPermissionsForUser(user string, perms authz2.Permissions) (bool, error)
+		DelPermissionsForUser(user string, perms authz2.Permissions) (bool, error)
+		AddPermissionsForRole(role string, perms authz2.Permissions) (bool, error)
+		DelPermissionsForRole(role string, perms authz2.Permissions) (bool, error)
 	}
 
-	RBACRestModule interface {
+	RestModule interface {
 		server.Module
 
+		AddPermissionMap(resource, action string)
 		Permission(resource, action string) oculi.MiddlewareFunc
 
 		ListUsersForRole(ctx oculi.Context) error
@@ -88,15 +107,6 @@ type (
 		AddPermissionsForRole(ctx oculi.Context) error
 		DelPermissionsForRole(ctx oculi.Context) error
 	}
-)
-
-var (
-	PublicIdentifier = "guest"
-
-	ErrAuthorizationService = errext.New("authorization service error", http.StatusInternalServerError)
-	ErrInvalidResourceName  = errext.New("invalid resource name", http.StatusBadRequest)
-	ErrInvalidActionName    = errext.New("invalid action name", http.StatusBadRequest)
-	ErrForbidden            = errext.New("no permission", http.StatusForbidden)
 )
 
 const RolePrefix = "role_"

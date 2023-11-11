@@ -2,13 +2,14 @@ package qrcode
 
 import (
 	"bytes"
+	"image/png"
+	"io"
+	"os"
+
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
 	"github.com/oculius/oculi/v2/common/error-extension"
 	"github.com/oculius/oculi/v2/common/generation"
-	"image/png"
-	"io"
-	"os"
 )
 
 func New(content string, opts ...QRCodeOption) generation.Generator {
@@ -24,7 +25,7 @@ func New(content string, opts ...QRCodeOption) generation.Generator {
 	return result
 }
 
-func (q *qrcodeGenerator) Generate() (*bytes.Buffer, errext.Error) {
+func (q *qrcodeGenerator) Generate() (*bytes.Buffer, errext.HttpError) {
 	result := new(bytes.Buffer)
 	if err := q.IOGenerate(result); err != nil {
 		return nil, err
@@ -32,7 +33,7 @@ func (q *qrcodeGenerator) Generate() (*bytes.Buffer, errext.Error) {
 	return result, nil
 }
 
-func (q *qrcodeGenerator) FileGenerate(fileName string) errext.Error {
+func (q *qrcodeGenerator) FileGenerate(fileName string) errext.HttpError {
 	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0666)
 	if err != nil {
 		return generation.ErrFailedToGenerate(err, nil, "qrcode", err.Error())
@@ -48,7 +49,7 @@ func (q *qrcodeGenerator) FileGenerate(fileName string) errext.Error {
 	return nil
 }
 
-func (q *qrcodeGenerator) IOGenerate(writer io.Writer) errext.Error {
+func (q *qrcodeGenerator) IOGenerate(writer io.Writer) errext.HttpError {
 	qrImgData, err := q.process()
 	if err != nil {
 		return generation.ErrFailedToGenerate(err, nil, "qrcode", err.Error())

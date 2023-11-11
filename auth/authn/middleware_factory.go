@@ -1,32 +1,23 @@
 package authn
 
 import (
-	"github.com/oculius/oculi/v2/common/auth-token"
 	"github.com/oculius/oculi/v2/common/response"
 	"github.com/oculius/oculi/v2/server/oculi"
 	"github.com/oculius/oculi/v2/server/oculi/token"
 )
 
 type (
-	authenticationEngine[UserDTO any] struct {
+	middlewareFactory[UserDTO any] struct {
 		AuthTokenEngine DefaultAuthenticationTokenEngine[UserDTO]
 		TokenFactory    TokenFactory
 		CredentialsKey  string
 	}
-
-	MiddlewareFactory interface {
-		AuthRequired(next oculi.HandlerFunc) oculi.HandlerFunc
-		AuthOptional(next oculi.HandlerFunc) oculi.HandlerFunc
-	}
-
-	DefaultAuthenticationTokenEngine[UserDTO any] authtoken.Engine[*authtoken.Claims[UserDTO]]
-	TokenFactory                                  func(isReq bool) token.Token
 )
 
-func NewAuthenticationEngine[UserDTO any](credentialsKey string,
+func NewMiddlewareFactory[UserDTO any](credentialsKey string,
 	tokenSource token.TokenSource, tokenSourceKey string,
 	authTokenEngine DefaultAuthenticationTokenEngine[UserDTO]) MiddlewareFactory {
-	return &authenticationEngine[UserDTO]{
+	return &middlewareFactory[UserDTO]{
 		AuthTokenEngine: authTokenEngine,
 		TokenFactory: func(isReq bool) token.Token {
 			return token.T(tokenSource, tokenSourceKey, token.String, isReq)
@@ -35,7 +26,7 @@ func NewAuthenticationEngine[UserDTO any](credentialsKey string,
 	}
 }
 
-func (a *authenticationEngine[UserDTO]) AuthRequired(next oculi.HandlerFunc) oculi.HandlerFunc {
+func (a *middlewareFactory[UserDTO]) AuthRequired(next oculi.HandlerFunc) oculi.HandlerFunc {
 	return func(ctx oculi.Context) error {
 		tkn := a.TokenFactory(true)
 		tokenMap, err := ctx.Lookup(tkn)
@@ -58,7 +49,7 @@ func (a *authenticationEngine[UserDTO]) AuthRequired(next oculi.HandlerFunc) ocu
 	}
 }
 
-func (a *authenticationEngine[UserDTO]) AuthOptional(next oculi.HandlerFunc) oculi.HandlerFunc {
+func (a *middlewareFactory[UserDTO]) AuthOptional(next oculi.HandlerFunc) oculi.HandlerFunc {
 	return func(ctx oculi.Context) error {
 		tkn := a.TokenFactory(false)
 		tokenMap, err := ctx.Lookup(tkn)

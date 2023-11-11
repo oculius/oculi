@@ -149,7 +149,7 @@ func (w *webServer) start() error {
 			return
 		}
 
-		genericError, ok := err.(errext.Error)
+		genericError, ok := err.(errext.HttpError)
 		if !ok {
 			httpError, ok2 := err.(*echo.HTTPError)
 			if ok2 {

@@ -2,43 +2,25 @@ package authtoken
 
 import (
 	"errors"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/oculius/oculi/v2/common/error-extension"
-	"time"
 )
 
 type (
-	Claims[V any] struct {
-		jwt.RegisteredClaims
-		Data       V      `json:"data"`
-		Identifier string `json:"identifier"`
-	}
-
-	jwtEngine[T ClaimContract] struct {
+	jwtEngine[T JwtClaimContract] struct {
 		key      []byte
 		alg      Algorithm
-		contract ClaimContract
+		contract JwtClaimContract
 	}
-
-	Algorithm string
 )
 
-func (j *jwtEngine[T]) Contract() ClaimContract {
+func (j *jwtEngine[T]) Contract() JwtClaimContract {
 	return j.contract
 }
 
-func (c *Claims[T]) SetExpires(exp time.Time) {
-	c.ExpiresAt = jwt.NewNumericDate(exp)
-}
-
-func (c *Claims[T]) SetTime(time time.Time) {
-	c.IssuedAt = jwt.NewNumericDate(time)
-	c.NotBefore = jwt.NewNumericDate(time)
-}
-
-var _ ClaimContract = &Claims[struct{}]{}
-
-func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, errext.Error) {
+func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, errext.HttpError) {
 	now := time.Now()
 	claim.SetExpires(now.Add(exp))
 	claim.SetTime(now)
@@ -52,7 +34,7 @@ func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, errext.Error)
 	return signedToken, nil
 }
 
-func (j *jwtEngine[T]) Decode(tokenString string) (T, errext.Error) {
+func (j *jwtEngine[T]) Decode(tokenString string) (T, errext.HttpError) {
 	var emptyclaim T
 	token, err := j.getToken(tokenString, j.contract)
 	if err != nil {
@@ -80,11 +62,7 @@ func (j *jwtEngine[T]) Validate(tokenString string) bool {
 	return false
 }
 
-func (a Algorithm) String() string {
-	return string(a)
-}
-
-func (j *jwtEngine[T]) getToken(token string, obj ClaimContract) (*jwt.Token, error) {
+func (j *jwtEngine[T]) getToken(token string, obj JwtClaimContract) (*jwt.Token, error) {
 	tokenClaims, err := jwt.ParseWithClaims(
 		token, obj,
 		func(t *jwt.Token) (interface{}, error) {
@@ -101,11 +79,7 @@ func (j *jwtEngine[T]) getToken(token string, obj ClaimContract) (*jwt.Token, er
 	return tokenClaims, nil
 }
 
-func (c *Claims[V]) Credentials() V {
-	return c.Data
-}
-
-func NewJWT[V any](key string, alg Algorithm) Engine[*Claims[V]] {
+func NewJWT[V any](key string, alg Algorithm) JwtEngine[*Claims[V]] {
 	return &jwtEngine[*Claims[V]]{
 		key:      []byte(key),
 		alg:      alg,

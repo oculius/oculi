@@ -1,36 +1,40 @@
-package authz
+package rbac
 
 import (
-	"github.com/oculius/oculi/v2/common/authn"
+	"strings"
+
+	"github.com/oculius/oculi/v2/auth/authn"
+	"github.com/oculius/oculi/v2/auth/authz"
 	"github.com/oculius/oculi/v2/common/response"
 	"github.com/oculius/oculi/v2/server/oculi"
-	"strings"
 )
 
 type (
-	rbacModule struct {
-		service   RBAC
-		retriever UserRetrieverREST
-		authn     authn.MiddlewareFactory
-		setting   *RouteSetting
+	restModule struct {
+		service             Service
+		retriever           authz.UserRetrieverREST
+		authn               authn.MiddlewareFactory
+		setting             *RouteSetting
+		resourcePermissions map[string][]string
 	}
 )
 
-func NewRBACRestModule(
-	service RBAC,
-	retriever UserRetrieverREST,
+func NewRestModule(
+	service Service,
+	retriever authz.UserRetrieverREST,
 	auth authn.MiddlewareFactory,
 	setting *RouteSetting,
-) RBACRestModule {
+) RestModule {
 	if setting == nil {
-		setting = empty
+		setting = emptySetting
 	} else {
 		setting.validate()
 	}
-	return &rbacModule{service, retriever, auth, setting}
+	return &restModule{service, retriever,
+		auth, setting, map[string][]string{}}
 }
 
-func (r *rbacModule) Init(route oculi.RouteGroup) error {
+func (r *restModule) Init(route oculi.RouteGroup) error {
 	authReq := []oculi.MiddlewareFunc{r.authn.AuthRequired}
 	root := r.setting
 	route.Bundle("/authorization", func(group oculi.RouteGroup) {
@@ -74,15 +78,15 @@ func (r *rbacModule) Init(route oculi.RouteGroup) error {
 	return nil
 }
 
-func (r *rbacModule) getIdentifier(ctx oculi.Context) string {
+func (r *restModule) getIdentifier(ctx oculi.Context) string {
 	identifier := strings.TrimSpace(r.retriever(ctx))
 	if len(identifier) == 0 {
-		identifier = PublicIdentifier
+		identifier = authz.PublicIdentifier
 	}
 	return identifier
 }
 
-func (r *rbacModule) ListCurrentUserPermissions(ctx oculi.Context) error {
+func (r *restModule) ListCurrentUserPermissions(ctx oculi.Context) error {
 	identifier := r.getIdentifier(ctx)
 	perms := r.service.ListPermissionsForUser(identifier)
 	return ctx.AutoSend(response.NewResponse("success", map[string]any{
@@ -91,14 +95,15 @@ func (r *rbacModule) ListCurrentUserPermissions(ctx oculi.Context) error {
 	}, nil))
 }
 
-func (r *rbacModule) ListResourcesAndActions(ctx oculi.Context) error {
+func (r *restModule) ListResourcesAndActions(ctx oculi.Context) error {
 	return ctx.AutoSend(response.NewResponse("success", map[string]any{
-		"resources": r.service.ListResources(),
-		"actions":   r.service.ListActions(),
+		"resources":                r.service.ListResources(),
+		"actions":                  r.service.ListActions(),
+		"resourceToActionsMapping": r.resourcePermissions,
 	}, nil))
 }
 
-func (r *rbacModule) Permission(resource, action string) oculi.MiddlewareFunc {
+func (r *restModule) Permission(resource, action string) oculi.MiddlewareFunc {
 	return func(next oculi.HandlerFunc) oculi.HandlerFunc {
 		return func(ctx oculi.Context) error {
 			identifier := r.getIdentifier(ctx)
@@ -111,96 +116,108 @@ func (r *rbacModule) Permission(resource, action string) oculi.MiddlewareFunc {
 	}
 }
 
-func (r *rbacModule) ListUsersForRole(ctx oculi.Context) error {
+func (r *restModule) ListUsersForRole(ctx oculi.Context) error {
 	return getterHelper(ctx, "role", func(data string) (any, error) {
 		return r.service.ListUsersForRole(data)
 	})
 }
 
-func (r *rbacModule) ListRolesForUser(ctx oculi.Context) error {
+func (r *restModule) ListRolesForUser(ctx oculi.Context) error {
 	return getterHelper(ctx, "user", func(data string) (any, error) {
 		return r.service.ListRolesForUser(data)
 	})
 }
 
-func (r *rbacModule) ListPermissionsForUser(ctx oculi.Context) error {
+func (r *restModule) ListPermissionsForUser(ctx oculi.Context) error {
 	return getterHelper(ctx, "user", func(data string) (any, error) {
 		return r.service.ListPermissionsForUser(data), nil
 	})
 }
 
-func (r *rbacModule) IsUserIn(ctx oculi.Context) error {
+func (r *restModule) IsUserIn(ctx oculi.Context) error {
 	return twinStringCheckerEndpoint[userRoleReq](r.service.IsUserIn, ctx)
 }
 
-func (r *rbacModule) HasRolePermission(ctx oculi.Context) error {
+func (r *restModule) HasRolePermission(ctx oculi.Context) error {
 	return dataCheckerEndpoint[roleSinglePermReq](r.service.HasRolePermission, ctx)
 }
 
-func (r *rbacModule) HasUserPermission(ctx oculi.Context) error {
+func (r *restModule) HasUserPermission(ctx oculi.Context) error {
 	return dataCheckerEndpoint[userSinglePermReq](r.service.HasUserPermission, ctx)
 }
 
-func (r *rbacModule) AddRoleForUser(ctx oculi.Context) error {
+func (r *restModule) AddRoleForUser(ctx oculi.Context) error {
 	return twinStringEndpoint[userRoleReq](r.service.AddRoleForUser, ctx)
 }
 
-func (r *rbacModule) DelRoleForUser(ctx oculi.Context) error {
+func (r *restModule) DelRoleForUser(ctx oculi.Context) error {
 	return twinStringEndpoint[userRoleReq](r.service.DelRoleForUser, ctx)
 }
 
-func (r *rbacModule) AddInheritance(ctx oculi.Context) error {
+func (r *restModule) AddInheritance(ctx oculi.Context) error {
 	return twinStringEndpoint[twinRoleReq](r.service.AddInheritance, ctx)
 }
 
-func (r *rbacModule) DelInheritance(ctx oculi.Context) error {
+func (r *restModule) DelInheritance(ctx oculi.Context) error {
 	return twinStringEndpoint[twinRoleReq](r.service.DelInheritance, ctx)
 }
 
-func (r *rbacModule) AddRolesForUser(ctx oculi.Context) error {
+func (r *restModule) AddRolesForUser(ctx oculi.Context) error {
 	return stringRolesEndpoint[userRolesReq](r.service.AddRolesForUser, ctx)
 }
 
-func (r *rbacModule) DelRolesForUser(ctx oculi.Context) error {
+func (r *restModule) DelRolesForUser(ctx oculi.Context) error {
 	return stringRolesEndpoint[userRolesReq](r.service.DelRolesForUser, ctx)
 }
 
-func (r *rbacModule) DelRole(ctx oculi.Context) error {
+func (r *restModule) DelRole(ctx oculi.Context) error {
 	return singleStringEndpoint[roleReq](r.service.DelRole, ctx)
 }
 
-func (r *rbacModule) DelUser(ctx oculi.Context) error {
+func (r *restModule) DelUser(ctx oculi.Context) error {
 	return singleStringEndpoint[userReq](r.service.DelUser, ctx)
 }
 
-func (r *rbacModule) AddPermissionForUser(ctx oculi.Context) error {
+func (r *restModule) AddPermissionForUser(ctx oculi.Context) error {
 	return tripleDataEndpoint[userSinglePermReq](r.service.AddPermissionForUser, ctx)
 }
 
-func (r *rbacModule) DelPermissionForUser(ctx oculi.Context) error {
+func (r *restModule) DelPermissionForUser(ctx oculi.Context) error {
 	return tripleDataEndpoint[userSinglePermReq](r.service.DelPermissionForUser, ctx)
 }
 
-func (r *rbacModule) AddPermissionForRole(ctx oculi.Context) error {
+func (r *restModule) AddPermissionForRole(ctx oculi.Context) error {
 	return tripleDataEndpoint[roleSinglePermReq](r.service.AddPermissionForRole, ctx)
 }
 
-func (r *rbacModule) DelPermissionForRole(ctx oculi.Context) error {
+func (r *restModule) DelPermissionForRole(ctx oculi.Context) error {
 	return tripleDataEndpoint[roleSinglePermReq](r.service.DelPermissionForRole, ctx)
 }
 
-func (r *rbacModule) AddPermissionsForUser(ctx oculi.Context) error {
+func (r *restModule) AddPermissionsForUser(ctx oculi.Context) error {
 	return bulkPermEndpoint[userBulkPermsReq](r.service.AddPermissionsForUser, ctx)
 }
 
-func (r *rbacModule) DelPermissionsForUser(ctx oculi.Context) error {
+func (r *restModule) DelPermissionsForUser(ctx oculi.Context) error {
 	return bulkPermEndpoint[userBulkPermsReq](r.service.DelPermissionsForUser, ctx)
 }
 
-func (r *rbacModule) AddPermissionsForRole(ctx oculi.Context) error {
+func (r *restModule) AddPermissionsForRole(ctx oculi.Context) error {
 	return bulkPermEndpoint[roleBulkPermsReq](r.service.AddPermissionsForRole, ctx)
 }
 
-func (r *rbacModule) DelPermissionsForRole(ctx oculi.Context) error {
+func (r *restModule) DelPermissionsForRole(ctx oculi.Context) error {
 	return bulkPermEndpoint[roleBulkPermsReq](r.service.DelPermissionsForRole, ctx)
+}
+
+func (r *restModule) AddPermissionMap(resource, action string) {
+	if r.resourcePermissions == nil {
+		r.resourcePermissions = map[string][]string{}
+	}
+	perms := r.resourcePermissions[resource]
+	if perms == nil {
+		perms = make([]string, 10)
+	}
+	perms = append(perms, action)
+	r.resourcePermissions[resource] = perms
 }

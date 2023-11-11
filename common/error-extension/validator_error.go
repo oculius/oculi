@@ -1,10 +1,11 @@
 package errext
 
 import (
-	ut "github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"reflect"
+
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 )
 
 type (
@@ -20,7 +21,7 @@ type (
 	}
 )
 
-func NewValidationError(err error, ut ut.Translator) Error {
+func NewValidationError(err error, ut ut.Translator) HttpError {
 	castedErr, ok := err.(validator.ValidationErrors)
 	if !ok {
 		panic("error is not validation error")

@@ -1,10 +1,11 @@
 package tf
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/oculius/oculi/v2/common/error-extension"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 type (
@@ -14,7 +15,7 @@ type (
 	cookieFetcher       struct{}
 )
 
-func (c cookieFetcher) Fetch(ctx echo.Context, t Token) (string, errext.Error) {
+func (c cookieFetcher) Fetch(ctx echo.Context, t Token) (string, errext.HttpError) {
 	if ctx.Request() == nil {
 		return "", ErrRequestNotFound(nil, t.Metadata())
 	}
@@ -27,18 +28,18 @@ func (c cookieFetcher) Fetch(ctx echo.Context, t Token) (string, errext.Error) {
 	return cookie.Value, nil
 }
 
-func (h headerFetcher) Fetch(ctx echo.Context, t Token) (string, errext.Error) {
+func (h headerFetcher) Fetch(ctx echo.Context, t Token) (string, errext.HttpError) {
 	if ctx.Request() == nil {
 		return "", ErrRequestNotFound(nil, t.Metadata())
 	}
 	return ctx.Request().Header.Get(t.Key()), nil
 }
 
-func (u urlparameterFetcher) Fetch(ctx echo.Context, t Token) (string, errext.Error) {
+func (u urlparameterFetcher) Fetch(ctx echo.Context, t Token) (string, errext.HttpError) {
 	return ctx.Param(t.Key()), nil
 }
 
-func (q queryFetcher) Fetch(ctx echo.Context, t Token) (string, errext.Error) {
+func (q queryFetcher) Fetch(ctx echo.Context, t Token) (string, errext.HttpError) {
 	return ctx.QueryParam(t.Key()), nil
 }
 

@@ -4,32 +4,10 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/gorm-adapter/v3"
-	"github.com/oculius/oculi/v2/server/oculi"
 	"gorm.io/gorm"
 )
 
-type (
-	Enforcer   casbin.IEnforcer
-	TxFunction func(enf Enforcer) error
-
-	Service interface {
-		Enforcer() Enforcer
-		Transaction(fn TxFunction) error
-	}
-
-	Roles []string
-	Users []string
-
-	UserRetrieverREST func(ctx oculi.Context) string
-)
-
-const (
-	ResourcePrefix = "rsrc_"
-	UserPrefix     = "user_"
-	ActionPrefix   = "actn_"
-)
-
-func newEnforcer(authModel string, db *gorm.DB) Enforcer {
+func NewCasbinEnforcer(authModel string, db *gorm.DB) Enforcer {
 	m, err := model.NewModelFromString(authModel)
 	if err != nil {
 		panic("failed to load authorization model: " + err.Error())
