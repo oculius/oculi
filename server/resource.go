@@ -1,11 +1,12 @@
 package server
 
 import (
-	"github.com/oculius/oculi/v2/common/logs"
-	"github.com/oculius/oculi/v2/server/oculi"
-	"github.com/pkg/errors"
 	"strings"
 	"time"
+
+	"github.com/oculius/oculi/v2/application/logs"
+	"github.com/oculius/oculi/v2/server/oculi"
+	"github.com/pkg/errors"
 )
 
 type (

@@ -3,7 +3,7 @@ package token
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
-	errext "github.com/oculius/oculi/v2/common/error-extension"
+	errext "github.com/oculius/oculi/v2/common/http-error"
 	tf2 "github.com/oculius/oculi/v2/server/oculi/token/token-fetcher"
 	tp2 "github.com/oculius/oculi/v2/server/oculi/token/token-parser"
 	"mime/multipart"

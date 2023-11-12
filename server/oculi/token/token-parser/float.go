@@ -1,8 +1,9 @@
 package tp
 
 import (
-	"github.com/oculius/oculi/v2/common/error-extension"
 	"strconv"
+
+	"github.com/oculius/oculi/v2/common/http-error"
 )
 
 type (
@@ -15,7 +16,7 @@ func Float32Parser() Parser {
 	return float32Parser{}
 }
 
-func (i float32Parser) Parse(t Token, value any) (any, errext.HttpError) {
+func (i float32Parser) Parse(t Token, value any) (any, httperror.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -28,7 +29,7 @@ func Float64Parser() Parser {
 	return float64Parser{}
 }
 
-func (i float64Parser) Parse(t Token, value any) (any, errext.HttpError) {
+func (i float64Parser) Parse(t Token, value any) (any, httperror.HttpError) {
 	val, ok := value.(string)
 	if !ok {
 		return nil, ErrInvalidInputValueString
@@ -37,7 +38,7 @@ func (i float64Parser) Parse(t Token, value any) (any, errext.HttpError) {
 	return genericFloatParser[float64](val, 64, t)
 }
 
-func genericFloatParser[T float32 | float64](val string, bitsize int, t Token) (T, errext.HttpError) {
+func genericFloatParser[T float32 | float64](val string, bitsize int, t Token) (T, httperror.HttpError) {
 	var result T
 	conVal, err := strconv.ParseFloat(val, bitsize)
 	if err != nil {

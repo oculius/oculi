@@ -4,12 +4,12 @@ import (
 	"mime/multipart"
 
 	"github.com/labstack/echo/v4"
-	"github.com/oculius/oculi/v2/common/error-extension"
+	"github.com/oculius/oculi/v2/common/http-error"
 )
 
 type (
 	Fetcher[T string | *multipart.FileHeader] interface {
-		Fetch(echo.Context, Token) (T, errext.HttpError)
+		Fetch(echo.Context, Token) (T, httperror.HttpError)
 	}
 
 	Token interface {

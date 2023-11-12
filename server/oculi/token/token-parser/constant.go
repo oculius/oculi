@@ -2,7 +2,7 @@ package tp
 
 import (
 	"fmt"
-	"github.com/oculius/oculi/v2/common/error-extension"
+	"github.com/oculius/oculi/v2/common/http-error"
 	"net/http"
 )
 
@@ -30,14 +30,14 @@ type (
 )
 
 var (
-	ErrFormFile                = errext.New("form file error", http.StatusInternalServerError)
-	ErrInvalidInputValueString = errext.New("invalid input type value for parsing",
+	ErrFormFile                = httperror.New("form file error", http.StatusInternalServerError)
+	ErrInvalidInputValueString = httperror.New("invalid input type value for parsing",
 		http.StatusInternalServerError,
 	)(nil, map[string]any{"want": "string"})
-	ErrInvalidInputValueFileHeader = errext.New("invalid input type value for parsing",
+	ErrInvalidInputValueFileHeader = httperror.New("invalid input type value for parsing",
 		http.StatusInternalServerError,
 	)(nil, map[string]any{"want": "file header"})
-	ErrTypeParse = errext.NewConditional("token_parser:type_parse",
+	ErrTypeParse = httperror.NewConditional("token_parser:type_parse",
 		func(i ...interface{}) string {
 			return fmt.Sprintf("failed to parse '%s' to type %s", i...)
 		},

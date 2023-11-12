@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/oculius/oculi/v2/common/error-extension"
+	"github.com/oculius/oculi/v2/common/http-error"
 )
 
 type (
@@ -20,7 +20,7 @@ func (j *jwtEngine[T]) Contract() JwtClaimContract {
 	return j.contract
 }
 
-func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, errext.HttpError) {
+func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, httperror.HttpError) {
 	now := time.Now()
 	claim.SetExpires(now.Add(exp))
 	claim.SetTime(now)
@@ -34,7 +34,7 @@ func (j *jwtEngine[T]) Encode(claim T, exp time.Duration) (string, errext.HttpEr
 	return signedToken, nil
 }
 
-func (j *jwtEngine[T]) Decode(tokenString string) (T, errext.HttpError) {
+func (j *jwtEngine[T]) Decode(tokenString string) (T, httperror.HttpError) {
 	var emptyclaim T
 	token, err := j.getToken(tokenString, j.contract)
 	if err != nil {

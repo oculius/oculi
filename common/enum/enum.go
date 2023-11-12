@@ -3,7 +3,7 @@ package enum
 import (
 	"database/sql/driver"
 	"github.com/oculius/oculi/v2/common/encoding/json"
-	errext "github.com/oculius/oculi/v2/common/error-extension"
+	errext "github.com/oculius/oculi/v2/common/http-error"
 	"net/http"
 	"strings"
 )

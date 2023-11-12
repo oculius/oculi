@@ -7,8 +7,8 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/gorm-adapter/v3"
 	authz2 "github.com/oculius/oculi/v2/auth/authz"
-	"github.com/oculius/oculi/v2/common/error-extension"
-	"github.com/oculius/oculi/v2/utils/arraymap"
+	"github.com/oculius/oculi/v2/common/http-error"
+	"github.com/oculius/oculi/v2/utils/arrayutils"
 	"gorm.io/gorm"
 )
 
@@ -42,7 +42,7 @@ func (r *service) AddAction(action ...string) {
 	}
 
 	r.actionList = append(r.actionList, action...)
-	r.actionList, _ = arraymap.ArrayUnique[string, string](
+	r.actionList, _ = arrayutils.Unique[string, string](
 		r.actionList, func(s string) string {
 			return strings.ToLower(s)
 		})
@@ -56,7 +56,7 @@ func (r *service) AddResource(resource ...string) {
 	}
 
 	r.resourceList = append(r.resourceList, resource...)
-	r.resourceList, _ = arraymap.ArrayUnique[string, string](
+	r.resourceList, _ = arrayutils.Unique[string, string](
 		r.resourceList, func(s string) string {
 			return strings.ToLower(s)
 		})
@@ -83,7 +83,7 @@ func (r *service) Transaction(fn authz2.TxFunction) error {
 			return fn(enf)
 		})
 	if err != nil {
-		if casted, ok := err.(errext.HttpError); ok {
+		if casted, ok := err.(httperror.HttpError); ok {
 			return casted
 		}
 		return ErrAuthorizationService(err, err.Error())

@@ -2,7 +2,7 @@ package httpclient
 
 import (
 	"fmt"
-	errext "github.com/oculius/oculi/v2/common/error-extension"
+	errext "github.com/oculius/oculi/v2/common/http-error"
 	"io"
 	"net/http"
 	"time"

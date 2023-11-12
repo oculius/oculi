@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	errext "github.com/oculius/oculi/v2/common/error-extension"
+	errext "github.com/oculius/oculi/v2/common/http-error"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/oculius/oculi/v2/common/error-extension"
+	"github.com/oculius/oculi/v2/common/http-error"
 	"github.com/oculius/oculi/v2/common/response"
 	"github.com/oculius/oculi/v2/server/oculi/token"
 )
@@ -17,8 +17,8 @@ type (
 
 	Context interface {
 		echo.Context
-		BindValidate(interface{}) errext.HttpError
-		Lookup(...token.Token) (map[string]token.Token, errext.HttpError)
+		BindValidate(interface{}) httperror.HttpError
+		Lookup(...token.Token) (map[string]token.Token, httperror.HttpError)
 		Send(response.Convertible) error
 		SendPretty(response.Convertible) error
 		IsDevelopment() bool
@@ -57,7 +57,7 @@ func NewContext(echoCtx echo.Context) Context {
 	}
 }
 
-func (c *oculiContext) Lookup(tokens ...token.Token) (map[string]token.Token, errext.HttpError) {
+func (c *oculiContext) Lookup(tokens ...token.Token) (map[string]token.Token, httperror.HttpError) {
 	N := len(tokens)
 	if N == 0 {
 		return nil, nil
@@ -73,7 +73,7 @@ func (c *oculiContext) Lookup(tokens ...token.Token) (map[string]token.Token, er
 	return result, nil
 }
 
-func (c *oculiContext) BindValidate(obj interface{}) errext.HttpError {
+func (c *oculiContext) BindValidate(obj interface{}) httperror.HttpError {
 	if err := c.Bind(obj); err != nil {
 		return ErrDataBinding(err, nil)
 	}
@@ -83,7 +83,7 @@ func (c *oculiContext) BindValidate(obj interface{}) errext.HttpError {
 		if !ok {
 			return ErrDataValidation(err, nil)
 		}
-		return errext.NewValidationError(err, Translator)
+		return httperror.NewValidationError(err, Translator)
 	}
 	return nil
 }

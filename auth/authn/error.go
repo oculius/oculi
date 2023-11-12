@@ -3,7 +3,7 @@ package authn
 import (
 	"net/http"
 
-	errext "github.com/oculius/oculi/v2/common/error-extension"
+	errext "github.com/oculius/oculi/v2/common/http-error"
 )
 
 var (

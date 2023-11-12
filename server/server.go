@@ -1,12 +1,13 @@
 package server
 
 import (
-	"github.com/oculius/oculi/v2/common/error-extension"
-	"github.com/oculius/oculi/v2/common/logs"
-	"github.com/oculius/oculi/v2/server/oculi"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/oculius/oculi/v2/application/logs"
+	"github.com/oculius/oculi/v2/common/http-error"
+	"github.com/oculius/oculi/v2/server/oculi"
 )
 
 type (
@@ -65,6 +66,6 @@ type (
 var _ Server = &webServer{}
 
 var (
-	ErrNotFound         = errext.New("not found", http.StatusNotFound)
-	ErrMethodNotAllowed = errext.New("not found", http.StatusMethodNotAllowed)
+	ErrNotFound         = httperror.New("not found", http.StatusNotFound)
+	ErrMethodNotAllowed = httperror.New("not found", http.StatusMethodNotAllowed)
 )

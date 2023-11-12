@@ -1,7 +1,7 @@
 package response
 
 import (
-	"github.com/oculius/oculi/v2/common/error-extension"
+	"github.com/oculius/oculi/v2/common/http-error"
 )
 
 type (
@@ -41,7 +41,7 @@ func New(resp Convertible) Body {
 		},
 	}
 	normal, ok := resp.(DetailConvertible)
-	err, ok2 := resp.(errext.HttpError)
+	err, ok2 := resp.(httperror.HttpError)
 	if ok && ok2 {
 		panic("ambigous http response")
 	} else if ok {

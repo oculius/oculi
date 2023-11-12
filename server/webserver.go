@@ -3,19 +3,20 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
-	"github.com/oculius/oculi/v2/common/error-extension"
-	"github.com/oculius/oculi/v2/common/logs"
-	"github.com/oculius/oculi/v2/common/response"
-	"github.com/oculius/oculi/v2/server/oculi"
-	"github.com/pkg/errors"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
+	"github.com/oculius/oculi/v2/application/logs"
+	"github.com/oculius/oculi/v2/common/http-error"
+	"github.com/oculius/oculi/v2/common/response"
+	"github.com/oculius/oculi/v2/server/oculi"
+	"github.com/pkg/errors"
 )
 
 type (
@@ -149,13 +150,13 @@ func (w *webServer) start() error {
 			return
 		}
 
-		genericError, ok := err.(errext.HttpError)
+		genericError, ok := err.(httperror.HttpError)
 		if !ok {
 			httpError, ok2 := err.(*echo.HTTPError)
 			if ok2 {
-				genericError = errext.New("unknown http error", httpError.Code)(httpError.Internal, httpError.Message)
+				genericError = httperror.New("unknown http error", httpError.Code)(httpError.Internal, httpError.Message)
 			} else {
-				genericError = errext.New("unknown error", http.StatusInternalServerError)(err, nil)
+				genericError = httperror.New("unknown error", http.StatusInternalServerError)(err, nil)
 			}
 		}
 

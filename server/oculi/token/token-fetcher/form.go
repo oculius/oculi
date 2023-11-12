@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/oculius/oculi/v2/common/error-extension"
+	"github.com/oculius/oculi/v2/common/http-error"
 	"github.com/pkg/errors"
 )
 
@@ -22,7 +22,7 @@ func FormFileFetcher() Fetcher[*multipart.FileHeader] {
 	return formfileFetcher{}
 }
 
-func (f formfileFetcher) Fetch(ctx echo.Context, t Token) (*multipart.FileHeader, errext.HttpError) {
+func (f formfileFetcher) Fetch(ctx echo.Context, t Token) (*multipart.FileHeader, httperror.HttpError) {
 	if ctx.Request() == nil {
 		return nil, ErrRequestNotFound(nil, t.Metadata())
 	}
@@ -35,6 +35,6 @@ func (f formfileFetcher) Fetch(ctx echo.Context, t Token) (*multipart.FileHeader
 	return fh, nil
 }
 
-func (f formFetcher) Fetch(ctx echo.Context, t Token) (string, errext.HttpError) {
+func (f formFetcher) Fetch(ctx echo.Context, t Token) (string, httperror.HttpError) {
 	return ctx.FormValue(t.Key()), nil
 }
