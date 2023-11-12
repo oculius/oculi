@@ -19,4 +19,10 @@
 - Controller: A controller responsible for handling request and response.
   - Consists of services and request handlers.
 - Component:
-- Module: A module is a collection of components that are grouped together to provide a specific set of functionality within the application.
+- Module: A module is a collection of components that are grouped together to provide a specific set of 
+functionality within the application.
+
+# Test Command
+```bash
+go test -v ./... -coverprofile=coverage.out && go tool cover -html=coverage.out -o coverage.html
+```

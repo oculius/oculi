@@ -1,4 +1,4 @@
-package utils
+package optional
 
 import (
 	"strings"
@@ -25,14 +25,16 @@ func PointerFactory[T any](val T) *T {
 	return i
 }
 
-func ZeroOrNil[T Number | time.Duration](val *T) *T {
+func Zero[T Number | time.Duration](val *T) *T {
 	if val == nil || *val == T(0) {
 		return nil
 	}
 	return val
 }
 
-func EmptyOrNil[T string | time.Time](val *T) *T {
+var emptyTime = time.Time{}
+
+func Empty[T string | time.Time](val *T) *T {
 	if casted, ok := any(val).(*string); ok {
 		if val == nil || len(*casted) == 0 {
 			return nil
@@ -40,8 +42,7 @@ func EmptyOrNil[T string | time.Time](val *T) *T {
 		return val
 	}
 	if casted, ok := any(val).(*time.Time); ok {
-		empty := time.Time{}
-		if val == nil || (*casted).IsZero() || *casted == empty {
+		if val == nil || (*casted).IsZero() || *casted == emptyTime {
 			return nil
 		}
 		return val
@@ -49,9 +50,12 @@ func EmptyOrNil[T string | time.Time](val *T) *T {
 	return nil
 }
 
-func TrimEmptyOrNil(val *string) *string {
+func Trim(val *string) *string {
+	if val == nil {
+		return nil
+	}
 	*val = strings.TrimSpace(*val)
-	if val == nil || len(*val) == 0 {
+	if len(*val) == 0 {
 		return nil
 	}
 	return val

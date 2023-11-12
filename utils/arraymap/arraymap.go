@@ -1,8 +1,8 @@
-package utils
+package arraymap
 
-func ArrayToMap[C comparable, V any](data []V, identifier func(V) C) map[C][]V {
+func ArrayToMap[C comparable, V any](array []V, identifier func(V) C) map[C][]V {
 	result := map[C][]V{}
-	for _, each := range data {
+	for _, each := range array {
 		group := identifier(each)
 		result[group] = append(result[group], each)
 	}

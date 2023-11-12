@@ -8,7 +8,7 @@ import (
 	"github.com/casbin/gorm-adapter/v3"
 	authz2 "github.com/oculius/oculi/v2/auth/authz"
 	"github.com/oculius/oculi/v2/common/error-extension"
-	"github.com/oculius/oculi/v2/common/utils"
+	"github.com/oculius/oculi/v2/utils/arraymap"
 	"gorm.io/gorm"
 )
 
@@ -42,7 +42,7 @@ func (r *service) AddAction(action ...string) {
 	}
 
 	r.actionList = append(r.actionList, action...)
-	r.actionList, _ = utils.ArrayUnique[string, string](
+	r.actionList, _ = arraymap.ArrayUnique[string, string](
 		r.actionList, func(s string) string {
 			return strings.ToLower(s)
 		})
@@ -56,7 +56,7 @@ func (r *service) AddResource(resource ...string) {
 	}
 
 	r.resourceList = append(r.resourceList, resource...)
-	r.resourceList, _ = utils.ArrayUnique[string, string](
+	r.resourceList, _ = arraymap.ArrayUnique[string, string](
 		r.resourceList, func(s string) string {
 			return strings.ToLower(s)
 		})

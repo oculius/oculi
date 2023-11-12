@@ -2,10 +2,11 @@ package di
 
 import (
 	"fmt"
-	"github.com/oculius/oculi/v2/server"
-	"go.uber.org/fx"
 	"reflect"
 	"sync"
+
+	"github.com/oculius/oculi/v2/server"
+	"go.uber.org/fx"
 )
 
 type (
@@ -26,8 +27,10 @@ func (sh *singleHolder) Dependencies() []fx.Option {
 	return []fx.Option{sh.opt}
 }
 
-func newRestServer[X server.Core, Y server.Config, Z server.IResource](core X, c Y, res Z, lc fx.Lifecycle, wg *sync.WaitGroup) (server.Server, error) {
-	srv, err := server.New(core, res, c)
+func newRestServer[Core server.Core, Config server.Config, Resource server.IResource](
+	core Core, config Config, res Resource,
+	lc fx.Lifecycle, wg *sync.WaitGroup) (server.Server, error) {
+	srv, err := server.New(core, res, config)
 	if err != nil {
 		return nil, err
 	}
