@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/oculius/oculi/v2/common/config"
 	"go.uber.org/fx"
 )
 
@@ -23,9 +24,12 @@ func Build() *App {
 	if !isStartUpTimeoutSet {
 		StartupTimeout(3 * time.Second)
 	}
+	if err := config.LoadEnv(); err != nil {
+		panic(err)
+	}
 
-	deps := newInstance().Build()
-	deps = append(deps, Supplier(&wg))
+	deps := getInstance().Build()
+	deps = append(deps, AsValue(&wg))
 	fmt.Printf("Took %s to build and prepare the application...\n", time.Now().Sub(buildTime).String())
 
 	runTime := time.Now()

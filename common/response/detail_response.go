@@ -7,19 +7,24 @@ type (
 		detail   string
 		data     any
 		metadata any
+		status   int
 	}
 )
 
 func NewResponse(detail string, data any, metadata any) DetailConvertible {
-	return &detailResponse{detail, data, metadata}
+	return &detailResponse{detail, data, metadata, http.StatusOK}
+}
+
+func NewResponseWithStatus(detail string, data any, metadata any, status int) DetailConvertible {
+	return &detailResponse{detail, data, metadata, status}
 }
 
 func (o *detailResponse) ResponseCode() int {
-	return http.StatusOK
+	return o.status
 }
 
 func (o *detailResponse) ResponseStatus() string {
-	return http.StatusText(http.StatusOK)
+	return http.StatusText(o.status)
 }
 
 func (o *detailResponse) Detail() string {

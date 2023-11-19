@@ -2,8 +2,9 @@ package authn
 
 import (
 	"github.com/oculius/oculi/v2/common/response"
-	"github.com/oculius/oculi/v2/server/oculi"
-	"github.com/oculius/oculi/v2/server/oculi/token"
+	"github.com/oculius/oculi/v2/rest/oculi"
+	"github.com/oculius/oculi/v2/rest/oculi/token"
+	"github.com/oculius/oculi/v2/rest/oculi/token/token-kind"
 )
 
 type (
@@ -15,12 +16,12 @@ type (
 )
 
 func NewMiddlewareFactory[UserDTO any](credentialsKey string,
-	tokenSource token.TokenSource, tokenSourceKey string,
+	tokenSource ts.TokenSource, tokenSourceKey string,
 	authTokenEngine DefaultAuthenticationTokenEngine[UserDTO]) MiddlewareFactory {
 	return &middlewareFactory[UserDTO]{
 		AuthTokenEngine: authTokenEngine,
 		TokenFactory: func(isReq bool) token.Token {
-			return token.T(tokenSource, tokenSourceKey, token.String, isReq)
+			return token.New(tokenSource, tokenSourceKey, tk.String, isReq)
 		},
 		CredentialsKey: credentialsKey,
 	}
@@ -34,7 +35,7 @@ func (a *middlewareFactory[UserDTO]) AuthRequired(next oculi.HandlerFunc) oculi.
 			return ctx.JSON(err.ResponseCode(), response.New(err))
 		}
 
-		tokenString, err := token.TokenValue[string](tokenMap[tkn.Key()])
+		tokenString, err := token.Extract[string](tokenMap[tkn.Key()])
 		if err != nil {
 			return ctx.JSON(err.ResponseCode(), response.New(err))
 		}
@@ -57,7 +58,7 @@ func (a *middlewareFactory[UserDTO]) AuthOptional(next oculi.HandlerFunc) oculi.
 			return next(ctx)
 		}
 
-		tokenString, err := token.TokenValue[string](tokenMap[tkn.Key()])
+		tokenString, err := token.Extract[string](tokenMap[tkn.Key()])
 		if err != nil {
 			return next(ctx)
 		}

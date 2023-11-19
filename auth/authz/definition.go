@@ -2,7 +2,7 @@ package authz
 
 import (
 	"github.com/casbin/casbin/v2"
-	"github.com/oculius/oculi/v2/server/oculi"
+	"github.com/oculius/oculi/v2/rest/oculi"
 )
 
 type (

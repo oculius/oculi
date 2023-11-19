@@ -3,11 +3,17 @@ package di
 import "go.uber.org/fx"
 
 type (
-	IndirectDependency interface {
-		Dependencies() []fx.Option
+	Container interface {
+		Content() []fx.Option
 	}
 
-	Component interface {
-		Child()
+	Triggerable interface {
+		Trigger()
+	}
+
+	Storage interface {
+		Add(opts []fx.Option)
+		Clear()
+		Build() []fx.Option
 	}
 )

@@ -18,7 +18,6 @@
   - Consists of another service and repository.
 - Controller: A controller responsible for handling request and response.
   - Consists of services and request handlers.
-- Component:
 - Module: A module is a collection of components that are grouped together to provide a specific set of 
 functionality within the application.
 
@@ -26,3 +25,6 @@ functionality within the application.
 ```bash
 go test -v ./... -coverprofile=coverage.out && go tool cover -html=coverage.out -o coverage.html
 ```
+
+Component Internal -> Install Directory (api v1, api v2)
+Rest Module -> Component Module (context based)

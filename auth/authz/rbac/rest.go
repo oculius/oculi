@@ -6,7 +6,7 @@ import (
 	"github.com/oculius/oculi/v2/auth/authn"
 	"github.com/oculius/oculi/v2/auth/authz"
 	"github.com/oculius/oculi/v2/common/response"
-	"github.com/oculius/oculi/v2/server/oculi"
+	"github.com/oculius/oculi/v2/rest/oculi"
 )
 
 type (

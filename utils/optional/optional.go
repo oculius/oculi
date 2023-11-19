@@ -1,6 +1,7 @@
 package optional
 
 import (
+	"strconv"
 	"strings"
 	"time"
 )
@@ -59,4 +60,12 @@ func Trim(val *string) *string {
 		return nil
 	}
 	return val
+}
+
+func Bool(val string, def bool) bool {
+	res, err := strconv.ParseBool(val)
+	if err != nil {
+		return def
+	}
+	return res
 }

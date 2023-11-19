@@ -3,8 +3,10 @@ package rbac
 import (
 	authz2 "github.com/oculius/oculi/v2/auth/authz"
 	"github.com/oculius/oculi/v2/common/response"
-	"github.com/oculius/oculi/v2/server/oculi"
-	"github.com/oculius/oculi/v2/server/oculi/token"
+	"github.com/oculius/oculi/v2/rest/oculi"
+	"github.com/oculius/oculi/v2/rest/oculi/token"
+	"github.com/oculius/oculi/v2/rest/oculi/token/token-kind"
+	ts "github.com/oculius/oculi/v2/rest/oculi/token/token-source"
 )
 
 type (
@@ -128,11 +130,11 @@ func singleStringEndpoint[T singleDataReq](fn singleStringEndPointFunc, ctx ocul
 }
 
 func getterHelper(ctx oculi.Context, key string, fn func(string) (any, error)) error {
-	tokenMap, err := ctx.Lookup(token.T(token.Parameter, key, token.String, true))
+	tokenMap, err := ctx.Lookup(token.New(ts.Parameter, key, tk.String, true))
 	if err != nil {
 		return err
 	}
-	target, err := token.TokenValue[string](tokenMap[key])
+	target, err := token.Extract[string](tokenMap[key])
 	if err != nil {
 		return err
 	}

@@ -136,6 +136,7 @@ func (m *redisImpl) Set(ctx context.Context, key string, data any, ttl time.Dura
 	if err := m.rdc.Set(ctx, key, buff, ttl).Err(); err != nil {
 		return err
 	}
+
 	return nil
 }
 

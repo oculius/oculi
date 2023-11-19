@@ -2,8 +2,8 @@ package rbac
 
 import (
 	authz2 "github.com/oculius/oculi/v2/auth/authz"
-	"github.com/oculius/oculi/v2/server"
-	"github.com/oculius/oculi/v2/server/oculi"
+	"github.com/oculius/oculi/v2/rest"
+	"github.com/oculius/oculi/v2/rest/oculi"
 )
 
 const (
@@ -71,7 +71,7 @@ type (
 	}
 
 	RestModule interface {
-		server.Module
+		rest.Module
 
 		AddPermissionMap(resource, action string)
 		Permission(resource, action string) oculi.MiddlewareFunc

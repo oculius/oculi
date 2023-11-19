@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/oculius/oculi/v2/auth/authtoken"
-	"github.com/oculius/oculi/v2/server"
-	"github.com/oculius/oculi/v2/server/oculi"
-	"github.com/oculius/oculi/v2/server/oculi/token"
+	"github.com/oculius/oculi/v2/rest"
+	"github.com/oculius/oculi/v2/rest/oculi"
+	"github.com/oculius/oculi/v2/rest/oculi/token"
 )
 
 type (
@@ -33,7 +33,7 @@ type (
 	}
 
 	Controller interface {
-		server.Module
+		rest.Module
 
 		Login(ctx context.Context) error
 		WhoAmI(ctx context.Context) error

@@ -9,7 +9,7 @@ var (
 	instance Storage
 )
 
-func newInstance() Storage {
+func getInstance() Storage {
 	once.Do(func() {
 		if instance != nil {
 			panic("dependency injection storage: instance is not nil. perhaps race condition occur?")

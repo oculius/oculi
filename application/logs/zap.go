@@ -25,6 +25,15 @@ type (
 	}
 )
 
+func (z *zapLogger) With(args ...any) Logger {
+	return &zapLogger{
+		prefix:   z.prefix,
+		level:    z.level,
+		out:      z.out,
+		instance: z.instance.With(args...),
+	}
+}
+
 var _ Logger = &zapLogger{}
 
 func NewZap(logOption LoggerOption, options ...zap.Option) (Logger, error) {
@@ -87,12 +96,12 @@ func (z *zapLogger) SetLevel(v log.Lvl) {
 func (z *zapLogger) SetHeader(_ string) {
 }
 
-func (z *zapLogger) isLogginOn() bool {
+func (z *zapLogger) isLogging() bool {
 	return z.level != log.OFF
 }
 
 func (z *zapLogger) Print(args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -100,7 +109,7 @@ func (z *zapLogger) Print(args ...interface{}) {
 }
 
 func (z *zapLogger) Printf(format string, args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -108,7 +117,7 @@ func (z *zapLogger) Printf(format string, args ...interface{}) {
 }
 
 func (z *zapLogger) Printj(j log.JSON) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -116,7 +125,7 @@ func (z *zapLogger) Printj(j log.JSON) {
 }
 
 func (z *zapLogger) Debug(args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -124,7 +133,7 @@ func (z *zapLogger) Debug(args ...interface{}) {
 }
 
 func (z *zapLogger) Debugf(format string, args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -132,7 +141,7 @@ func (z *zapLogger) Debugf(format string, args ...interface{}) {
 }
 
 func (z *zapLogger) Debugj(j log.JSON) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -140,7 +149,7 @@ func (z *zapLogger) Debugj(j log.JSON) {
 }
 
 func (z *zapLogger) Info(args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -148,7 +157,7 @@ func (z *zapLogger) Info(args ...interface{}) {
 }
 
 func (z *zapLogger) Infof(format string, args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -156,7 +165,7 @@ func (z *zapLogger) Infof(format string, args ...interface{}) {
 }
 
 func (z *zapLogger) Infoj(j log.JSON) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -164,7 +173,7 @@ func (z *zapLogger) Infoj(j log.JSON) {
 }
 
 func (z *zapLogger) Warn(args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -172,7 +181,7 @@ func (z *zapLogger) Warn(args ...interface{}) {
 }
 
 func (z *zapLogger) Warnf(format string, args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -180,7 +189,7 @@ func (z *zapLogger) Warnf(format string, args ...interface{}) {
 }
 
 func (z *zapLogger) Warnj(j log.JSON) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -188,7 +197,7 @@ func (z *zapLogger) Warnj(j log.JSON) {
 }
 
 func (z *zapLogger) Error(args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -196,7 +205,7 @@ func (z *zapLogger) Error(args ...interface{}) {
 }
 
 func (z *zapLogger) Errorf(format string, args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -204,7 +213,7 @@ func (z *zapLogger) Errorf(format string, args ...interface{}) {
 }
 
 func (z *zapLogger) Errorj(j log.JSON) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -212,7 +221,7 @@ func (z *zapLogger) Errorj(j log.JSON) {
 }
 
 func (z *zapLogger) Fatal(args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -220,7 +229,7 @@ func (z *zapLogger) Fatal(args ...interface{}) {
 }
 
 func (z *zapLogger) Fatalj(j log.JSON) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -228,7 +237,7 @@ func (z *zapLogger) Fatalj(j log.JSON) {
 }
 
 func (z *zapLogger) Fatalf(format string, args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -236,7 +245,7 @@ func (z *zapLogger) Fatalf(format string, args ...interface{}) {
 }
 
 func (z *zapLogger) Panic(args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -244,7 +253,7 @@ func (z *zapLogger) Panic(args ...interface{}) {
 }
 
 func (z *zapLogger) Panicj(j log.JSON) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -252,7 +261,7 @@ func (z *zapLogger) Panicj(j log.JSON) {
 }
 
 func (z *zapLogger) Panicf(format string, args ...interface{}) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -263,12 +272,22 @@ func (z *zapLogger) Instance() interface{} {
 	return z.instance
 }
 
-func (z *zapLogger) setupBaseLogger(info Info) *zap.SugaredLogger {
-	return z.instance.With("metadata", info.Metadata(), "timestamp", time.Now().UTC().Format(time.RFC3339Nano))
+func (z *zapLogger) setupBaseLogger(rawInfo Info) *zap.SugaredLogger {
+	// Todo implements middleware log
+	//metadata := rawInfo.Metadata()
+	//processedInfo := rawInfo
+	//if len(z.middleware) > 0 {
+	//	// TODO deep iterate struct to map
+	//	for _, m := range z.middleware {
+	//		m(metadata)
+	//	}
+	//	processedInfo = NewInfo(rawInfo.Message(), M(metadata))
+	//}
+	return z.instance.With("metadata", rawInfo.Metadata(), "timestamp", time.Now().UTC().Format(time.RFC3339Nano))
 }
 
 func (z *zapLogger) OPrint(info Info) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -276,7 +295,7 @@ func (z *zapLogger) OPrint(info Info) {
 }
 
 func (z *zapLogger) ODebug(info Info) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -284,7 +303,7 @@ func (z *zapLogger) ODebug(info Info) {
 }
 
 func (z *zapLogger) OInfo(info Info) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -292,7 +311,7 @@ func (z *zapLogger) OInfo(info Info) {
 }
 
 func (z *zapLogger) OWarn(info Info) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -300,7 +319,7 @@ func (z *zapLogger) OWarn(info Info) {
 }
 
 func (z *zapLogger) OError(info Info) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -308,7 +327,7 @@ func (z *zapLogger) OError(info Info) {
 }
 
 func (z *zapLogger) OFatal(info Info) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 
@@ -316,7 +335,7 @@ func (z *zapLogger) OFatal(info Info) {
 }
 
 func (z *zapLogger) OPanic(info Info) {
-	if !z.isLogginOn() {
+	if !z.isLogging() {
 		return
 	}
 

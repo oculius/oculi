@@ -11,12 +11,6 @@ type (
 		opts []fx.Option
 		sync.RWMutex
 	}
-
-	Storage interface {
-		Add(opts []fx.Option)
-		Clear()
-		Build() []fx.Option
-	}
 )
 
 func newStorage() Storage {

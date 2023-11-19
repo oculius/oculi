@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/oculius/oculi/v2/server/oculi"
+	"github.com/oculius/oculi/v2/rest/oculi"
 )
 
 type (
