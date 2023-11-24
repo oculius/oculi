@@ -71,7 +71,7 @@ type (
 	}
 
 	RestModule interface {
-		rest.Module
+		rest.AccessPoint
 
 		AddPermissionMap(resource, action string)
 		Permission(resource, action string) oculi.MiddlewareFunc

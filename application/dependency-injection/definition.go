@@ -10,10 +10,4 @@ type (
 	Triggerable interface {
 		Trigger()
 	}
-
-	Storage interface {
-		Add(opts []fx.Option)
-		Clear()
-		Build() []fx.Option
-	}
 )

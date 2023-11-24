@@ -1,4 +1,4 @@
-package bp
+package pckg_rest
 
 import (
 	"context"

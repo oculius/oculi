@@ -13,7 +13,7 @@ type (
 		Detail() string
 	}
 
-	HttpErrorSeed func(source error, metadata any, args ...interface{}) HttpError
+	Seed func(source error, metadata any, args ...interface{}) HttpError
 )
 
 var ValidatorErrorHttpStatus = http.StatusUnprocessableEntity

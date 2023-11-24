@@ -116,7 +116,7 @@ func (w *webServer) start() error {
 	echoEngine := w.engine
 	echoEngine.UseEchoMiddleware(middleware.Recover())
 	// TODO Server/Validator
-	// echoEngine.Validator = w.boilerplate.Validator()
+	// echoEngine.Validator = w.package.Validator()
 	echoEngine.Logger = w.logger
 	echoEngine.Logger.SetLevel(log.INFO)
 
@@ -173,7 +173,7 @@ func (w *webServer) start() error {
 		}
 	}
 
-	if err := w.core.Init(echoEngine); err != nil {
+	if err := w.core.OnStart(echoEngine); err != nil {
 		w.logger.Error("error on init http server")
 		return err
 	}
@@ -194,7 +194,7 @@ func (w *webServer) serve() {
 }
 
 func (w *webServer) stop() {
-	ctx, cancel := context.WithTimeout(context.Background(), w.option.ShutdownGracefulDuration)
+	ctx, cancel := context.WithTimeout(context.Background(), w.option.ShutdownGracePeriod)
 	defer func() {
 		close(w.signal)
 		cancel()

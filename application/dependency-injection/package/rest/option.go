@@ -1,4 +1,4 @@
-package bp
+package pckg_rest
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	di "github.com/oculius/oculi/v2/application/dependency-injection"
+	pckg "github.com/oculius/oculi/v2/application/dependency-injection/package"
 	"github.com/oculius/oculi/v2/utils/optional"
 )
 
@@ -39,8 +40,12 @@ func getName() string {
 	return getEnvOrDef("SERVICE_NAME", "Unnamed Service")
 }
 
+func isDevMode() bool {
+	return optional.Bool(getEnvOrDef("DEV_MODE", "false"), false)
+}
+
 func RestServerOption() di.Container {
-	return genericContainer{
+	return pckg.PackageContainer{
 		di.AsTaggedFunction(
 			getName,
 			nil,
@@ -62,10 +67,7 @@ func RestServerOption() di.Container {
 			di.Tag{`name:"shutdown_grace_period"`},
 		),
 		di.AsTaggedFunction(
-			func() bool {
-				fmt.Println("DEV_MODE", getEnvOrDef("DEV_MODE", "false"))
-				return optional.Bool(getEnvOrDef("DEV_MODE", "false"), false)
-			},
+			isDevMode,
 			nil,
 			di.Tag{`name:"is_dev_mode"`},
 		),

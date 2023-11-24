@@ -20,7 +20,7 @@ type (
 	}
 )
 
-func New(detail string, httpStatus int) HttpErrorSeed {
+func New(detail string, httpStatus int) Seed {
 	return (&staticErrorSeed{detail, httpStatus}).Build
 }
 

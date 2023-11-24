@@ -1,14 +1,14 @@
 # Todo
 
-- [ ] Excel
 - [ ] Validator
-- [ ] Storage / S3 Protocols
-- [ ] Worker Abstraction (Pool, Internal CRON) -> pond & gocron
-- [ ] Local Feature Flag
 - [ ] DB?
 - [x] Authorization -> Casbin
 - [x] Enum
 - [x] Common Functions
+- [ ] Storage / S3 Protocols
+- [ ] Worker Abstraction (Pool, Internal CRON) -> pond & gocron
+- [ ] Local Feature Flag
+- [ ] Excel
 
 # Layer Definition
 
@@ -26,5 +26,16 @@ functionality within the application.
 go test -v ./... -coverprofile=coverage.out && go tool cover -html=coverage.out -o coverage.html
 ```
 
+# Note
+
 Component Internal -> Install Directory (api v1, api v2)
 Rest Module -> Component Module (context based)
+
+# Improvement
+- [x] dependency injection: boilerplate -> rename, refactor, improve
+- [ ] graphql
+- [x] rest: internal component, core, module -> refactor, rename & improve
+- [ ] event-driven: test signal changes, unit testing
+- [ ] rest token: refine/redesign
+- [ ] authn: rest module
+- [ ] authz: permission refactor, add rest to search by action/resource, permission list return value rest refactor

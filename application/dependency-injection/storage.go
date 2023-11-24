@@ -13,7 +13,7 @@ type (
 	}
 )
 
-func newStorage() Storage {
+func newStorage() *storage {
 	return &storage{
 		RWMutex: sync.RWMutex{},
 		opts:    make([]fx.Option, 0, 25),

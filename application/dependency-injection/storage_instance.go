@@ -6,10 +6,10 @@ import (
 
 var (
 	once     sync.Once
-	instance Storage
+	instance *storage
 )
 
-func getInstance() Storage {
+func getInstance() *storage {
 	once.Do(func() {
 		if instance != nil {
 			panic("dependency injection storage: instance is not nil. perhaps race condition occur?")

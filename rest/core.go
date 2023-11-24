@@ -10,18 +10,18 @@ import (
 type (
 	defaultCore struct {
 		healthcheckHandler oculi.HandlerFunc
-		internals          []InternalComponent
+		gateways           []Gateway
 		externals          []ExternalComponent
 	}
 )
 
-func NewCore(healthcheck oculi.HandlerFunc, internals []InternalComponent, externals []ExternalComponent) Core {
-	return &defaultCore{healthcheck, internals, externals}
+func NewCore(healthcheck oculi.HandlerFunc, gateways []Gateway, externals []ExternalComponent) Core {
+	return &defaultCore{healthcheck, gateways, externals}
 }
 
-func (m *defaultCore) Init(engine *oculi.Engine) error {
-	for _, cmp := range m.internals {
-		if err := cmp.Init(engine); err != nil {
+func (m *defaultCore) OnStart(engine *oculi.Engine) error {
+	for _, cmp := range m.gateways {
+		if err := cmp.OnStart(engine); err != nil {
 			return err
 		}
 	}

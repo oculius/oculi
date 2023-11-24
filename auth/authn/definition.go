@@ -33,7 +33,7 @@ type (
 	}
 
 	Controller interface {
-		rest.Module
+		rest.AccessPoint
 
 		Login(ctx context.Context) error
 		WhoAmI(ctx context.Context) error

@@ -18,12 +18,12 @@ type (
 		AfterExit(...HookFunction)
 	}
 
-	Initiable[T any] interface {
-		Init(required T) error
+	Startable[T any] interface {
+		OnStart(parent T) error
 	}
 
 	Core interface {
-		Initiable[*oculi.Engine]
+		Startable[*oculi.Engine]
 		Healthcheck(ctx oculi.Context) error
 	}
 
@@ -32,8 +32,8 @@ type (
 		Ping(ctx context.Context) error
 	}
 
-	InternalComponent Initiable[*oculi.Engine]
-	Module            Initiable[oculi.RouteGroup]
+	Gateway     Startable[*oculi.Engine]
+	AccessPoint Startable[oculi.RouteGroup]
 
 	HookFunction func() error
 )

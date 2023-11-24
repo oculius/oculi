@@ -7,8 +7,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/oculius/oculi/v2/application/dependency-injection"
-	"github.com/oculius/oculi/v2/application/dependency-injection/boilerplate"
+	di "github.com/oculius/oculi/v2/application/dependency-injection"
+	bp "github.com/oculius/oculi/v2/application/dependency-injection/package"
+	"github.com/oculius/oculi/v2/application/dependency-injection/package/rest"
 	logs2 "github.com/oculius/oculi/v2/application/logs"
 	"github.com/oculius/oculi/v2/auth/authz"
 	"github.com/oculius/oculi/v2/common/response"
@@ -30,22 +31,18 @@ type (
 var running = int64(0)
 var count = 0
 
-func NewC2(X string, c Config) rest.Module {
+func NewC2(X string, c Config) rest.AccessPoint {
 	return C2{}
 }
 
-func (c C2) Init(route oculi.RouteGroup) error {
+func (c C2) OnStart(route oculi.RouteGroup) error {
 	apigroup := route.RGroup("/c2")
 	apigroup.GET("/asd", func(ctx oculi.Context) error {
 		id := count
 		count++
 		start := time.Now()
-		go func() {
-			for i := 0; i < 5; i++ {
-				time.Sleep(time.Second)
-				fmt.Println(id, ":", i)
-			}
-		}()
+		time.Sleep(time.Second * 2)
+		fmt.Println(id)
 		resp := response.NewResponse("hai", map[string]any{"time": time.Now().Sub(start).String(), "start": start.Format(time.RFC3339Nano)}, true)
 		return ctx.SendPretty(resp)
 	})
@@ -81,7 +78,7 @@ func (c C2) Init(route oculi.RouteGroup) error {
 	return nil
 }
 
-func (c C1) Init(route oculi.RouteGroup) error {
+func (c C1) OnStart(route oculi.RouteGroup) error {
 	apigroup := route.RGroup("/c1")
 	apigroup.GET("/asd", func(ctx oculi.Context) error {
 		fmt.Println("run")
@@ -92,8 +89,8 @@ func (c C1) Init(route oculi.RouteGroup) error {
 }
 
 var (
-	_ rest.Module = C1{}
-	_ rest.Module = C2{}
+	_ rest.AccessPoint = C1{}
+	_ rest.AccessPoint = C2{}
 )
 
 type A struct {
@@ -198,7 +195,7 @@ func main() {
 		//	}
 		//}, nil, di.Tag{`name:"healthcheck"`}),
 		bp.RestServer[rest.Core](),
-		bp.RestServerOption(),
+		pckg_rest.RestServerOption(),
 		//di.AsValue(rest.NewOption("testing", 4512, true, 5*time.Second)),
 		bp.APIVersion(1),
 		bp.APIVersion(2),
@@ -209,7 +206,7 @@ func main() {
 		di.AsTaggedValue("asd", di.Tag{`s_name:"taga"`}),
 		di.AsTaggedValue("def", di.Tag{`name:"tag2"`}),
 		bp.ProvideModule("v2", NewC2, di.Tag{`s_name:"taga"`}),
-		//di.ComponentProvider("v1", func() (error, int, rest.Module) { return nil, 0, nil }, nil),
+		//di.ComponentProvider("v1", func() (error, int, rest.AccessPoint) { return nil, 0, nil }, nil),
 		//di.TP(NewC2, nil, di.Tag{`group:"v1_modules"`}),
 		//di.Invoker(func(resource Option) {
 		//	fn := oculi.FromHttpHandler(h.ServeHTTP)

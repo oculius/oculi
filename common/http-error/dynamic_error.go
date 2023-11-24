@@ -25,7 +25,7 @@ type (
 	HttpStatusMapFunc func(error) int
 )
 
-func NewConditional(id string, formatter FormatFunc, conditionalHttpStatus HttpStatusMapFunc) HttpErrorSeed {
+func NewConditional(id string, formatter FormatFunc, conditionalHttpStatus HttpStatusMapFunc) Seed {
 	return (&dynamicErrorSeed{
 		id, formatter, conditionalHttpStatus,
 	}).build
